@@ -1,0 +1,15 @@
+metric_name,overall_value,class_1_value (fractured),class_2_value (not fractured),interpretation
+Accuracy,0.998,N/A,N/A,Overall correctness
+Precision,0.998,0.996,1.000,Positive prediction reliability
+Recall,0.998,1.000,0.996,Detection rate per fracture type
+F1-Score,0.998,0.998,0.998,Balanced performance per class
+Weighted F1-Score,0.998,N/A,N/A,Weighted average F1 across classes
+AUC-ROC,1.000,N/A,N/A,Threshold-independent discriminative ability
+Training Time,28800.0s,N/A,N/A,Total model training duration
+Inference Time,0.0963s,N/A,N/A,Per-image inference latency
+Model Size,127.3MB,N/A,N/A,Model memory footprint
+
+# Confusion Matrix
+# ,fractured,not fractured
+# fractured,238,0
+# not fractured,1,267

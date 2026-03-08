@@ -1,0 +1,116 @@
+# FractureMamba-ViT Configuration
+# Bone Fracture Classification - IIT Mandi Hackathon 2025
+
+data:
+  root_dir: "d:/Vision-Mamba/Bone_Fracture_Binary_Classification/Bone_Fracture_Binary_Classification"
+  image_size: 224
+  num_classes: 2
+  class_names: ["fractured", "not fractured"]
+  num_workers: 2
+  pin_memory: true
+
+model:
+  name: "FractureMambaViT"
+  mamba:
+    embed_dim: 192
+    depth: 4
+    patch_size: 16
+    d_state: 8
+    d_conv: 4
+    expand_factor: 2
+    drop_path_rate: 0.2
+    dropout: 0.1
+  swin:
+    model_name: "swin_tiny_patch4_window7_224"
+    pretrained: true
+    drop_path_rate: 0.2
+  fusion:
+    dim: 384
+    num_heads: 8
+    dropout: 0.1
+  head:
+    hidden_dim: 512
+    dropout: 0.3
+
+training:
+  epochs: 100
+  batch_size: 8
+  gradient_accumulation_steps: 4
+  optimizer:
+    name: "AdamW"
+    lr: 1.0e-4
+    weight_decay: 0.05
+    betas: [0.9, 0.999]
+  scheduler:
+    name: "CosineAnnealingWarmRestarts"
+    T_0: 10
+    T_mult: 2
+    eta_min: 1.0e-6
+  warmup:
+    epochs: 5
+    start_lr: 1.0e-6
+  focal_loss:
+    gamma: 2.0
+    alpha: null
+  label_smoothing: 0.1
+  gradient_clip_norm: 1.0
+  early_stopping:
+    patience: 20
+    min_delta: 0.001
+  swa:
+    enabled: true
+    start_epoch: 80
+    lr: 5.0e-5
+  mixed_precision: true
+
+augmentation:
+  train:
+    clahe:
+      enabled: true
+      clip_limit: 2.0
+      tile_grid_size: 8
+    horizontal_flip: 0.5
+    vertical_flip: 0.0
+    rotation: 15
+    affine:
+      translate: [0.1, 0.1]
+      scale: [0.9, 1.1]
+      shear: 5
+    color_jitter:
+      brightness: 0.2
+      contrast: 0.2
+      saturation: 0.1
+      hue: 0.05
+    random_erasing:
+      probability: 0.25
+      scale: [0.02, 0.15]
+    gaussian_blur:
+      probability: 0.1
+      kernel_size: 3
+    mixup:
+      enabled: true
+      alpha: 0.4
+    cutmix:
+      enabled: true
+      alpha: 1.0
+    mixup_cutmix_prob: 0.5
+  normalize:
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+
+evaluation:
+  tta:
+    enabled: true
+    num_augments: 5
+  cross_validation:
+    enabled: true
+    n_folds: 5
+
+paths:
+  checkpoint_dir: "d:/Vision-Mamba/checkpoints"
+  results_dir: "d:/Vision-Mamba/results"
+  explainability_dir: "d:/Vision-Mamba/explainability_outputs"
+  logs_dir: "d:/Vision-Mamba/logs"
+
+seed: 42
+deterministic: true

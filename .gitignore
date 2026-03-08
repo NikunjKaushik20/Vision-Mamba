@@ -1,0 +1,28 @@
+# Dataset (too large for GitHub)
+Bone_Fracture_Binary_Classification/
+
+# Model checkpoints (large binary files)
+checkpoints/*.pth
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Outputs (keep results/ and explainability_outputs/ tracked)
+logs/
+
+# Virtual environments
+venv/
+.env/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
