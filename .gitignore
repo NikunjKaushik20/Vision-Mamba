@@ -1,8 +1,7 @@
 # Dataset (too large for GitHub)
 Bone_Fracture_Binary_Classification/
 
-# Model checkpoints (large binary files)
-checkpoints/*.pth
+# Checkpoints tracked via Git LFS (see .gitattributes)
 
 # Python cache
 __pycache__/
