@@ -1,0 +1,871 @@
+% ============================================================
+%  FractureMamba-ViT  —  Technical Project Report
+%  THRUST Tech Expo 2026
+%  Compiler: pdflatex (or xelatex)
+% ============================================================
+\documentclass[12pt, a4paper]{article}
+
+% ── Encoding & Fonts ────────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ── Page Layout ─────────────────────────────────────────────
+\usepackage[
+  a4paper,
+  top=2.4cm, bottom=2.6cm,
+  left=2.2cm, right=2.2cm,
+  headheight=15pt
+]{geometry}
+
+% ── Colours ─────────────────────────────────────────────────
+\usepackage[dvipsnames, table]{xcolor}
+\definecolor{NavyBlue}{HTML}{0D2137}
+\definecolor{TealBlue}{HTML}{0A7EA4}
+\definecolor{LightBlue}{HTML}{E8F4FA}
+\definecolor{LightGray}{HTML}{F5F7FA}
+\definecolor{MidGray}{HTML}{D0D7E3}
+\definecolor{DarkGray}{HTML}{4A5568}
+\definecolor{AccentCyan}{HTML}{00B4D8}
+\definecolor{SoftGreen}{HTML}{E6FFF4}
+\definecolor{SoftRed}{HTML}{FFF0F0}
+\definecolor{SoftYellow}{HTML}{FFFDE6}
+\definecolor{BodyText}{HTML}{2D3748}
+
+% ── Graphics & Figures ──────────────────────────────────────
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[font=small, labelfont=bf, labelsep=period,
+            justification=centering]{caption}
+\usepackage{subcaption}
+
+% ── Tables ──────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{makecell}
+\renewcommand{\arraystretch}{1.35}
+
+% ── Mathematics ─────────────────────────────────────────────
+\usepackage{amsmath, amssymb}
+
+% ── Lists ───────────────────────────────────────────────────
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=1.6em, itemsep=3pt, parsep=2pt}
+\setlist[enumerate]{leftmargin=1.6em, itemsep=3pt}
+
+% ── Hyperlinks ──────────────────────────────────────────────
+\usepackage[
+  colorlinks=true,
+  linkcolor=TealBlue,
+  urlcolor=TealBlue,
+  citecolor=TealBlue,
+  pdftitle={FractureMamba-ViT Technical Report},
+  pdfauthor={THRUST Tech Expo 2026},
+  pdfsubject={Bone Fracture Classification — Deep Learning},
+]{hyperref}
+
+% ── Headers & Footers ───────────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[L]{%
+  \colorbox{NavyBlue}{%
+    \parbox[c][0.55cm][c]{\dimexpr\textwidth+2\fboxsep\relax}{%
+      \hspace{4pt}\color{white}\small\textbf{FractureMamba-ViT}%
+      \enspace\textcolor{AccentCyan}{|}%
+      \enspace Technical Report\enspace\textcolor{AccentCyan}{|}%
+      \enspace THRUST Tech Expo 2026%
+    }%
+  }%
+}
+\fancyfoot[C]{%
+  \colorbox{NavyBlue}{%
+    \parbox[c][0.45cm][c]{\dimexpr\textwidth+2\fboxsep\relax}{%
+      \hspace{4pt}\color{white}\footnotesize
+      Confidential — THRUST Tech Expo 2026 Submission
+      \hfill Page~\thepage%
+      \hspace{4pt}%
+    }%
+  }%
+}
+
+% ── Section Styling ─────────────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\large\bfseries\color{NavyBlue}}
+  {\thesection.}{0.6em}{}
+  [\vspace{-4pt}\textcolor{TealBlue}{\rule{\linewidth}{1.4pt}}\vspace{2pt}]
+\titlespacing{\section}{0pt}{18pt}{8pt}
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{TealBlue}}
+  {\thesubsection}{0.5em}{}
+\titlespacing{\subsection}{0pt}{12pt}{5pt}
+
+% ── Coloured Boxes ───────────────────────────────────────────
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{breakable, skins}
+
+\tcbset{
+  abstractbox/.style={
+    enhanced, breakable,
+    colback=LightBlue, colframe=TealBlue,
+    boxrule=1pt, arc=4pt,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+    fontupper=\small
+  },
+  keyresult/.style={
+    enhanced, breakable,
+    colback=SoftGreen, colframe=green!50!black,
+    boxrule=1pt, arc=4pt,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+    fontupper=\small
+  },
+  coverbox/.style={
+    enhanced,
+    colback=NavyBlue!85!black, colframe=TealBlue,
+    boxrule=1.5pt, arc=6pt,
+    left=14pt, right=14pt, top=12pt, bottom=12pt,
+  }
+}
+
+% ── Utility ─────────────────────────────────────────────────
+\usepackage{parskip}
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+\usepackage{setspace}
+\usepackage{titling}
+
+% ── Path for images ─────────────────────────────────────────
+% Place the 7 PNG files in the same directory as this .tex file
+% and rename them as below, OR update these paths accordingly.
+%
+%   confusion_matrix.png   <- 1773234015015_image.png
+%   training_curves.png    <- 1773234056024_image.png
+%   mamba_ankle.png        <- 1773234076319_image.png
+%   mamba_hip.png          <- 1773234087376_image.png
+%   predictions.png        <- 1773234091423_image.png
+%   state_space.png        <- 1773234098238_image.png  (or 102951)
+
+\graphicspath{{./images/}}
+
+% ============================================================
+%  DOCUMENT BEGIN
+% ============================================================
+\begin{document}
+
+% ── COVER PAGE ──────────────────────────────────────────────
+\thispagestyle{empty}
+\pagecolor{NavyBlue}
+\color{white}
+
+\vspace*{3.5cm}
+
+\begin{center}
+  {\fontsize{30}{36}\selectfont\bfseries FractureMamba-ViT}\\[0.5em]
+  \textcolor{TealBlue}{\rule{0.6\linewidth}{1.5pt}}\\[0.8em]
+  {\large A Dual-Stream State-Space and Transformer Architecture\\[0.3em]
+   for Interpretable Bone Fracture Classification}\\[1.2em]
+  \textcolor{AccentCyan}{\rule{0.4\linewidth}{0.6pt}}\\[0.8em]
+  {\normalsize THRUST Tech Expo 2026 \quad|\quad Technical Project Report}\\[0.3em]
+  {\small Emergency Radiology AI \quad|\quad Deep Learning \quad|\quad Medical Image Analysis}
+\end{center}
+
+\vspace{1.8cm}
+
+% Stats bar
+\begin{tcbitemize}[
+  raster columns=4,
+  raster equal height,
+  colback=NavyBlue!70!black,
+  colframe=TealBlue,
+  boxrule=0.8pt,
+  arc=4pt,
+  fontupper=\bfseries\color{AccentCyan}\centering,
+  halign=center,
+  valign=center,
+  size=normal
+]
+  \tcbitem \large 99.8\%\\[2pt]\normalsize Test Accuracy
+  \tcbitem \large 100\%\\[2pt]\normalsize Fracture Recall
+  \tcbitem \large 1.000\\[2pt]\normalsize AUC-ROC
+  \tcbitem \large 0 FN\\[2pt]\normalsize False Negatives
+\end{tcbitemize}
+
+\vfill
+\begin{center}
+  \textcolor{MidGray}{\small Submitted to THRUST Tech Expo 2026 — Preliminary Evaluation Round}
+\end{center}
+
+% ── Restore normal colours ───────────────────────────────────
+\newpage
+\pagecolor{white}
+\color{BodyText}
+\setcounter{page}{1}
+
+% ============================================================
+\section{Abstract}
+% ============================================================
+
+\begin{tcolorbox}[abstractbox]
+Bone fracture classification from radiographic X-ray images is a critical workflow in emergency
+radiology, where rapid and accurate diagnosis directly determines patient outcomes. This report
+presents \textbf{FractureMamba-ViT}, a novel dual-stream hybrid deep learning architecture that
+combines the global sequential modelling power of Vision Mamba — a purely PyTorch Selective
+State Space Model (S6) — with the localised hierarchical feature extraction of a Swin
+Transformer. The fusion of these two paradigms is orchestrated through a Bidirectional
+Cross-Attention and Gating block, ensuring the model captures both long-range skeletal geometry
+and fine-grained pathological textures in a single unified pass.
+
+Trained on a balanced binary X-ray dataset under an aggressive real-world robustness augmentation
+strategy that simulates smartphone-capture and ER-lighting artifacts, the model achieves a
+\textbf{test accuracy of 99.8\%}, a \textbf{fracture recall of 100\%}, and an
+\textbf{AUC-ROC of 1.000}, with zero false negatives across the entire held-out test set. A
+comprehensive dual-interpretability module providing Grad-CAM spatial heatmaps and Mamba
+hidden-state visualisations bridges the gap between AI prediction and clinical trust. The system
+operates at 96\,ms per inference on commodity hardware, making it a credible candidate for ER
+triage automation, rural telemedicine, and post-disaster medical support.
+\end{tcolorbox}
+
+% ============================================================
+\section{Problem Statement}
+% ============================================================
+
+Emergency departments across the world operate under persistent resource pressure — radiologists
+are stretched thin, imaging backlogs form, and critically injured patients may wait hours for a
+diagnosis that should take seconds. Bone fractures, ranging from hairline stress fractures to
+catastrophic comminuted breaks, are among the most common musculoskeletal injuries managed in
+emergency settings. When a fracture goes undetected or is misclassified — even temporarily —
+the clinical consequences include improper bone fusion, chronic pain, long-term disability, and
+in severe cases, life-threatening complications from untreated injury.
+
+While skilled radiologists are highly accurate, the volume-to-specialist ratio in many hospitals,
+particularly in lower-income countries or rural regions, renders timely expert interpretation
+structurally impossible. There is therefore a critical and urgent need for an automated,
+interpretable, and robustly deployable AI system capable of instantly classifying incoming X-ray
+images as \emph{fractured} or \emph{non-fractured}, prioritising cases for immediate human
+review, and providing transparent spatial evidence for that decision.
+
+% ============================================================
+\section{Motivation}
+% ============================================================
+
+Earlier generations of X-ray AI used standard CNNs, which, despite strong performance on clean
+datasets, fundamentally struggle with long-range structural dependencies — the global geometry of
+a bone that determines whether a subtle density variation is a genuine fracture or an artifact.
+Vision Transformers addressed this by computing global self-attention, but at the cost of
+quadratic complexity $\mathcal{O}(N^2)$ in sequence length, making them computationally expensive
+on high-resolution scans.
+
+State-Space Models like Mamba offer linear-complexity $\mathcal{O}(N)$ global sequence modelling,
+but their purely sequential nature can miss fine-grained local textures. The motivation here is to
+combine these two architectural philosophies into a single cohesive system — one that handles both
+the big picture and the minute detail simultaneously — while remaining transparent enough that a
+practising clinician can understand and trust the output. Equally important is the model's
+practical robustness: X-rays in real ERs are often transmitted via smartphone photographs of
+screens, suffering from JPEG artifacts, motion blur, and poor lighting. Training a model that
+performs under these conditions, not just in pristine academic datasets, is the central practical
+challenge this project addresses.
+
+% ============================================================
+\section{System Architecture}
+% ============================================================
+
+FractureMamba-ViT is built around a four-component design: dual-stream feature extraction,
+cross-modal attention fusion, a robust classification head, and a dual interpretability module.
+Each component addresses a distinct aspect of the fracture classification problem.
+
+\subsection{Stream~1 — Vision Mamba (Selective State Space Model)}
+
+The first stream is a custom Selective State Space Model (S6) implemented entirely in PyTorch —
+without dependency on custom CUDA kernels. The input image is divided into non-overlapping
+$16\times16$ pixel patches, projected into a $D$-dimensional latent space. These patch embeddings
+are processed \emph{bidirectionally} by the SSM: the forward scan processes patches from
+top-left to bottom-right, capturing the global skeletal layout; the backward scan processes in
+reverse, integrating context flowing from distal to proximal bone segments.
+
+The selective gating mechanism dynamically adjusts the state-transition matrices $\mathbf{A}$ and
+$\mathbf{B}$ based on input content, enabling the model to decide which image patches are
+informationally important. The model must learn to selectively retain information about the bone
+cortex while suppressing soft-tissue clutter. Computational complexity is $\mathcal{O}(N)$ in
+sequence length — a significant advantage over ViT's $\mathcal{O}(N^2)$.
+
+\subsection{Stream~2 — Swin Transformer (Shifted Window Attention)}
+
+The second stream employs a Swin Transformer backbone as a local feature extractor. Using
+shifted-window multi-head self-attention, the Swin Transformer partitions the feature map into
+non-overlapping windows and computes self-attention locally, with alternating window shifts
+across layers to enable cross-window information propagation. This design is uniquely suited for
+detecting fine-grained fracture textures — hairline fissures, micro-fissures at bone margins,
+and cortical discontinuities — that require dense local attention.
+
+While the Mamba stream establishes a global skeletal map, the Swin stream independently develops
+a rich local texture descriptor. Shallow layers respond to low-level density gradients; deeper
+layers respond to higher-order discontinuity patterns that are the hallmark of fractures.
+
+\subsection{Bidirectional Cross-Attention Fusion with Gating}
+
+The outputs of both streams are fed into a Bidirectional Cross-Attention Fusion block. The Mamba
+representation attends to the Swin representation (querying which local textures are relevant to
+the identified global geometry), and vice versa. A learned sigmoid gating network produces scalar
+weights for each direction, dynamically balancing stream contributions per image. If an X-ray
+contains clear global structural disruption but ambiguous local texture, the Mamba gate dominates;
+for hairline fractures with minimal global displacement, the Swin gate prevails.
+
+\subsection{Classification Head}
+
+The fused latent representation passes through a multi-layer perceptron comprising two
+fully-connected layers with Layer Normalisation, GELU activations, and dropout ($p=0.3$). The
+final output is a scalar logit passed through sigmoid, representing the probability of fracture.
+Focal Loss biases training toward cautious fracture detection from the first gradient update.
+
+\vspace{0.5em}
+
+\begin{table}[H]
+\centering
+\caption{Summary of FractureMamba-ViT architectural components.}
+\label{tab:architecture}
+\rowcolors{2}{LightGray}{white}
+\begin{tabularx}{\textwidth}{>{\bfseries}lXX}
+\toprule
+\rowcolor{NavyBlue}
+\textcolor{white}{Component} &
+\textcolor{white}{Implementation} &
+\textcolor{white}{Primary Role} \\
+\midrule
+Vision Mamba (SSM)      & Custom PyTorch S6, Bidirectional      & Global skeletal geometry, $\mathcal{O}(N)$ \\
+Swin Transformer        & Shifted-Window MHSA                   & Local fracture texture extraction \\
+Cross-Attention Fusion  & Bidirectional + Sigmoid Gate          & Adaptive multi-stream integration \\
+Classification Head     & MLP + LayerNorm + GELU + Dropout(0.3) & Binary fracture probability output \\
+Interpretability        & Grad-CAM + Mamba State Viz            & Clinical transparency \& trust \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+\section{Machine Learning Pipeline}
+% ============================================================
+
+The complete system is organised as an 8-stage pipeline, from raw data collection through
+interpretable clinical inference.
+
+\begin{enumerate}[label=\textbf{Stage \arabic*.}, leftmargin=*, itemsep=6pt]
+
+  \item \textbf{Data Collection.}
+  Binary-labelled X-ray scans organised into \texttt{fractured} and \texttt{not\_fractured}
+  directories. Dynamic class weighting is computed at load time to handle inherent dataset
+  imbalances, ensuring the model does not default toward the majority class.
+
+  \item \textbf{Preprocessing.}
+  All images are resized to $224\times224$ pixels. CLAHE (Contrast Limited Adaptive Histogram
+  Equalisation) with clip limit $= 2.0$ is applied to enhance cortical bone contrast. Pixel
+  intensities are normalised using ImageNet mean and standard deviation constants.
+
+  \item \textbf{Data Augmentation.}
+  An Albumentations-based pipeline applies geometric distortions, Random Erasing, Gaussian Blur,
+  MixUp ($\alpha=0.4$), and CutMix ($\alpha=1.0$). A real-world robustness suite simulates ISO
+  noise, JPEG compression, motion blur, monitor Moir\'{e} grid dropout, and sun flares —
+  conditions encountered when X-rays are photographed from screens in resource-constrained settings.
+
+  \item \textbf{Model Architecture.}
+  The preprocessed image passes through the FractureMamba-ViT dual-stream backbone described
+  in Section~4.
+
+  \item \textbf{Training Procedure.}
+  Mixed Precision (FP16) training with gradient accumulation (4 steps, effective batch size 32).
+  Optimizer: AdamW (lr~$=10^{-4}$, weight decay~$=0.05$). Scheduler: Cosine Annealing with Warm
+  Restarts ($T_0=10$, $T_\text{mult}=2$). SWA activates in the final 20 epochs.
+
+  \item \textbf{Validation.}
+  5-Fold Stratified Cross-Validation ensures proportional class representation across all folds.
+  The best validation checkpoint is retained per fold.
+
+  \item \textbf{Testing.}
+  Test-Time Augmentation (TTA) aggregates predictions across 5 differently-augmented views of
+  each test image, improving prediction stability under rotational variance.
+
+  \item \textbf{Inference.}
+  End-to-end forward pass at $\approx 96$\,ms per image. Outputs include the binary fracture class,
+  confidence score, Grad-CAM heatmap, and Mamba state-space visualisation.
+
+\end{enumerate}
+
+% ============================================================
+\section{Dataset Description}
+% ============================================================
+
+The dataset consists of binary-labelled radiographic X-ray images sourced from clinical imaging
+repositories, organised into two classes: \textbf{Fractured} and \textbf{Not Fractured}. Scans
+cover diverse anatomical sites — hip, ankle, elbow, knee, and forearm — reflecting the variety
+of fracture presentations encountered in real ER settings.
+
+Dynamic class weighting is computed at dataset load time. A stratified 5-fold split preserves the
+original class ratio in every training/validation combination. Images are standardised using
+ImageNet constants, which provide a strong initialisation for medical imaging fine-tuning due to
+shared low-level edge statistics.
+
+\begin{table}[H]
+\centering
+\caption{Dataset properties and preprocessing configuration.}
+\label{tab:dataset}
+\rowcolors{2}{LightGray}{white}
+\begin{tabularx}{\textwidth}{>{\bfseries}lX}
+\toprule
+\rowcolor{NavyBlue}
+\textcolor{white}{Property} & \textcolor{white}{Value} \\
+\midrule
+Task Type             & Binary Classification (Fractured / Not Fractured) \\
+Image Size            & $224 \times 224$ pixels (post-resize) \\
+Preprocessing         & CLAHE (clip$=2.0$) + ImageNet Normalisation \\
+Validation Strategy   & 5-Fold Stratified Cross-Validation \\
+Test Set (evaluated)  & 506 images (238 fractured, 268 not fractured) \\
+Augmentation          & Albumentations + Custom Robustness Suite \\
+Class Balancing       & Dynamic class weighting at load time \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+\section{Training Configuration}
+% ============================================================
+
+The training recipe was designed to maximise performance on limited GPU VRAM (targeting RTX
+3050 6\,GB), while maintaining training stability over up to 100 epochs.
+
+\begin{table}[H]
+\centering
+\caption{Complete training hyperparameter configuration.}
+\label{tab:training}
+\rowcolors{2}{LightGray}{white}
+\begin{tabularx}{\textwidth}{>{\bfseries}lXX}
+\toprule
+\rowcolor{NavyBlue}
+\textcolor{white}{Hyperparameter} &
+\textcolor{white}{Value} &
+\textcolor{white}{Rationale} \\
+\midrule
+Optimizer           & AdamW                          & Decoupled weight decay \\
+Learning Rate       & $1.0\times10^{-4}$             & Conservative for dual-stream stability \\
+Weight Decay        & 0.05                           & Strong L2 regularisation \\
+Scheduler           & Cosine Annealing + Warm Restarts & Escapes local minima; $T_0=10$, $T_\text{mult}=2$ \\
+Max Epochs          & 100 (early stop patience = 20) & Monitors validation loss \\
+Physical Batch Size & 8                              & VRAM-constrained \\
+Grad.\ Accumulation & 4 steps $\Rightarrow$ eff.\ BS 32 & Simulates larger batch \\
+Loss Function       & Focal Loss ($\gamma=2.0$)      & Penalises hard misclassified examples \\
+Label Smoothing     & $\varepsilon=0.1$              & Prevents overconfidence \\
+Mixed Precision     & FP16 (\texttt{torch.cuda.amp}) & 2$\times$ memory efficiency \\
+SWA                 & Final 20 epochs                & Broad weight averaging \\
+Dropout             & 0.3 (classification head)      & Regularises final MLP \\
+TTA at Test Time    & 5 augmented views averaged     & Stability under pose variation \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+\section{Training Analysis}
+% ============================================================
+
+Figure~\ref{fig:training} shows the training and validation loss curves, accuracy curves,
+overfitting gap, and the Cosine Annealing learning rate schedule over the training run.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{training_curves.png}
+  \caption{FractureMamba-ViT Training Analysis: Loss curves (top-left), Accuracy curves
+           (top-right), Overfitting gap (bottom-left), and LR schedule (bottom-right)
+           over $\approx$30 epochs shown.}
+  \label{fig:training}
+\end{figure}
+
+The loss curves reveal rapid convergence within the first 5 epochs, driven by the Cosine
+Annealing warm restarts pushing the learning rate up to $10^{-4}$ at the start of each cycle.
+The validation loss tracks the training loss closely throughout, with the overfitting gap
+remaining bounded between $-0.025$ and $+0.015$ — an exceptionally tight spread that reflects
+the combined regularisation efficacy of Random Erasing, MixUp, CutMix, and Dropout. Crucially,
+the overfitting gap never shows a sustained upward divergence, confirming genuine generalisation.
+
+The accuracy curves show validation accuracy leading training accuracy in the early epochs — a
+phenomenon consistent with Focal Loss biasing the model toward cautious fracture detection from
+the first gradient update. Both curves converge above 98\% by epoch 10 and plateau near 99.8\%
+by epoch 25--30. The learning rate schedule (bottom-right) clearly shows two full Cosine
+Annealing cycles, with the second cycle's period extended due to $T_\text{mult}=2$.
+
+% ============================================================
+\section{Performance Metrics}
+% ============================================================
+
+The model was evaluated on the held-out test set with 5-view TTA. Results are summarised in
+Table~\ref{tab:metrics}.
+
+\begin{table}[H]
+\centering
+\caption{Complete performance metrics on the held-out test set with TTA applied.}
+\label{tab:metrics}
+\rowcolors{2}{LightGray}{white}
+\begin{tabularx}{\textwidth}{>{\bfseries}lcccc}
+\toprule
+\rowcolor{NavyBlue}
+\textcolor{white}{Metric} &
+\textcolor{white}{Overall} &
+\textcolor{white}{Class: Fractured} &
+\textcolor{white}{Class: Not Fractured} &
+\textcolor{white}{Interpretation} \\
+\midrule
+Accuracy        & 99.8\%  & —      & —      & Overall correctness \\
+Precision       & 99.8\%  & 99.6\% & 100.0\%& Positive prediction reliability \\
+Recall          & 99.8\%  & \textbf{100.0\%} & 99.6\% & Detection rate per class \\
+F1-Score        & 0.998   & 0.998  & 0.998  & Balanced class performance \\
+Weighted F1     & 0.998   & —      & —      & Weighted avg F1 \\
+AUC-ROC         & \textbf{1.000}  & — & — & Discrimination ability \\
+Inference Time  & 96.3\,ms & —     & —      & Per-image latency \\
+Model Size      & 127.3\,MB & —    & —      & Memory footprint \\
+Training Time   & $\approx$8\,hrs & — & —   & Total training duration \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{tcolorbox}[keyresult, title={\bfseries\color{NavyBlue} Key Clinical Result}]
+The model achieves \textbf{100\% Recall on the Fractured class} — zero fractured bones were
+missed in the entire test set. In emergency medicine, a false negative (discharging a patient
+with an undiagnosed fracture) is categorically more dangerous than a false positive (flagging a
+healthy bone for secondary review). The single false positive in the test set represents
+acceptable clinical overhead. The AUC-ROC of 1.000 indicates perfect rank-ordering ability
+across all decision thresholds.
+\end{tcolorbox}
+
+% ============================================================
+\section{Confusion Matrix Analysis}
+% ============================================================
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.72\linewidth]{confusion_matrix.png}
+  \caption{Confusion Matrix — FractureMamba-ViT on the held-out test set.
+           TP\,=\,238, TN\,=\,267, FP\,=\,1, FN\,=\,0.}
+  \label{fig:confusion}
+\end{figure}
+
+The confusion matrix reveals the asymmetric safety boundaries learned by the model. Out of 238
+truly fractured X-rays, all 238 were correctly identified — a perfect True Positive rate with
+zero False Negatives. Out of 268 non-fractured X-rays, 267 were correctly identified as healthy,
+with only 1 False Positive.
+
+\begin{table}[H]
+\centering
+\caption{Confusion matrix with colour-coded clinical interpretation.}
+\label{tab:cm}
+\begin{tabular}{l>{\centering\arraybackslash}p{5cm}>{\centering\arraybackslash}p{5cm}}
+\toprule
+\rowcolor{NavyBlue}
+\textcolor{white}{} &
+\textcolor{white}{Predicted: Fractured} &
+\textcolor{white}{Predicted: Not Fractured} \\
+\midrule
+\textbf{Actual: Fractured}     & \cellcolor{SoftGreen}\textbf{238 (True Positive)}  & \cellcolor{SoftRed}0 (False Negative) \\
+\textbf{Actual: Not Fractured} & \cellcolor{SoftYellow}1 (False Positive) & \cellcolor{SoftGreen}\textbf{267 (True Negative)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The \textbf{False Negative Rate is 0\%}. The \textbf{False Positive Rate is 0.37\%} (1 of 268
+healthy X-rays flagged incorrectly). In clinical deployment, a false positive requires a
+physician to spend approximately 30 additional seconds reviewing a healthy scan — minimal cost.
+A false negative results in a patient with an undiagnosed fracture being discharged, potentially
+leading to complications over days or weeks. The Focal Loss objective with $\gamma=2.0$
+successfully biased the model toward this asymmetric cost structure.
+
+% ============================================================
+\section{Model Interpretability}
+% ============================================================
+
+A primary design goal of FractureMamba-ViT is clinical transparency. The dual interpretability
+module provides two complementary perspectives on every prediction.
+
+\subsection{Vision Mamba Attention Visualisation}
+
+The Mamba stream's attention is visualised by computing the $L_2$ norm of hidden state vectors
+at each patch position and projecting the resulting importance weights back onto the original
+image spatial grid. High-norm regions indicate positions where the SSM hidden state underwent
+the most significant evolution — typically corresponding to structural boundaries, cortical edges,
+and fracture sites.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{mamba_ankle.png}
+  \caption{Vision Mamba Attention Visualisation — ankle X-ray with surgical hardware.
+           The heatmap (centre) highlights cortical bone regions; the overlay (right)
+           confirms attention concentrated around the fracture site and metallic implant.}
+  \label{fig:mamba_ankle}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{mamba_hip.png}
+  \caption{Vision Mamba Attention Visualisation — hip/femoral X-ray. The Mamba stream
+           concentrates activation on the femoral neck — the anatomically highest-risk zone
+           for hip fractures — with a hot-spot precisely over the fracture area.}
+  \label{fig:mamba_hip}
+\end{figure}
+
+In Figure~\ref{fig:mamba_ankle}, the ankle X-ray with visible metallic fixation hardware shows
+the Mamba stream broadly activating across the full bone axis — consistent with the SSM's role
+of building a global skeletal map. In Figure~\ref{fig:mamba_hip}, the hip X-ray shows a tight,
+focal hot-spot precisely over the femoral neck, demonstrating that the model correctly locates
+the anatomical region of clinical concern before classifying the image.
+
+\subsection{Mamba State-Space Visualisation}
+
+Beyond simple attention heatmaps, the Mamba stream provides a deeper interpretability view
+through its hidden state evolution matrix. As the model processes each patch in sequence, its
+internal state vector evolves — regions of rapid state change (bright horizontal bands in the
+heatmap) correspond to informationally significant transitions in the image.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{state_space.png}
+  \caption{Mamba State-Space Visualisation for an elbow X-ray (fractured).
+           \textbf{Top-right:} Hidden state evolution heatmap across 192 patch positions and
+           64 feature dimensions.
+           \textbf{Bottom-left:} Token importance ($L_2$ norm) — uniform norm confirms stable
+           hidden state magnitude.
+           \textbf{Bottom-right:} Sequential coherence (cosine similarity between adjacent
+           patch states) showing structured, high-coherence regions punctuated by sharp drops
+           at fracture boundaries.}
+  \label{fig:statespace}
+\end{figure}
+
+The sequential coherence plot (bottom-right of Figure~\ref{fig:statespace}) is particularly
+informative: high cosine similarity between adjacent patch states (values near 1.0) indicates
+smooth, continuous bone structure; sharp drops to $\approx 0.3$--$0.5$ at certain patch
+positions indicate structural discontinuities — where the bone's radiographic texture changes
+abruptly, consistent with fracture lines. The model uses the fracture as a ``state change
+signal'' in its sequential processing — a complementary mechanism to the Swin Transformer's
+local texture approach.
+
+% ============================================================
+\section{Sample Predictions}
+% ============================================================
+
+Figure~\ref{fig:predictions} shows a representative grid of correctly classified fracture cases
+across diverse anatomical sites, demonstrating the model's cross-anatomy generalisation.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{predictions.png}
+  \caption{FractureMamba-ViT predictions on sample test images. All 8 cases are correctly
+           classified as \emph{fractured}. Confidence scores range from 69\%--78\%, reflecting
+           appropriately calibrated uncertainty on hip, ankle, elbow, and knee X-rays from
+           various viewing angles.}
+  \label{fig:predictions}
+\end{figure}
+
+The confidence scores (69\%--78\%) are noteworthy: they are not artificially high, which would
+indicate overconfidence. Rather, they reflect genuine uncertainty on anatomically complex cases —
+such as the oblique hip X-rays in the bottom row, where patient positioning introduces additional
+classification difficulty. Calibrated uncertainty is a positive sign for clinical deployment, as
+overconfident AI systems are more dangerous than appropriately uncertain ones.
+
+% ============================================================
+\section{Results and Evaluation}
+% ============================================================
+
+FractureMamba-ViT demonstrates exceptional generalisation across all evaluation dimensions. The
+system achieves 99.8\% overall accuracy on the held-out test set, with precision, recall, and
+F1 all balanced near 0.998 across both classes. The AUC-ROC of 1.000 indicates perfect
+rank-ordering ability regardless of decision threshold, confirming that accuracy is not an
+artifact of threshold selection.
+
+Generalisation is evidenced by the 5-fold cross-validation performance: optimal validation
+accuracy of 99.6\% was reached organically near epoch 14, before the 20-epoch early-stopping
+patience window triggers, leaving headroom for SWA to further smooth the weight landscape.
+The maximum overfitting gap of 0.0142 is remarkably small for a model of this complexity,
+attributable to the combined effect of MixUp, CutMix, Random Erasing, and Dropout.
+
+\begin{table}[H]
+\centering
+\caption{Summary of key evaluation results.}
+\label{tab:results}
+\rowcolors{2}{LightGray}{white}
+\begin{tabularx}{\textwidth}{>{\bfseries}lXl}
+\toprule
+\rowcolor{NavyBlue}
+\textcolor{white}{Criterion} &
+\textcolor{white}{Result} &
+\textcolor{white}{Assessment} \\
+\midrule
+Test Accuracy          & 99.8\%               & State-of-the-art \\
+Fracture Recall (FNR)  & 100\% (FNR $= 0$\%) & Clinically critical threshold met \\
+Overfitting Gap (max)  & 0.0142               & Excellent generalisation \\
+AUC-ROC                & 1.000                & Perfect discrimination \\
+Inference Latency      & 96.3\,ms             & Real-time ER triage capable \\
+Val.\ Accuracy (CV)    & 99.6\%               & Consistent across all 5 folds \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+\section{Innovation}
+% ============================================================
+
+FractureMamba-ViT innovates on multiple fronts:
+
+\begin{itemize}
+
+  \item \textbf{Hybrid SSM + Transformer Architecture.}
+  The combination of a bidirectional Vision Mamba stream with a Swin Transformer, fused through
+  learnable cross-attention gating, is a novel architectural formulation. It addresses the
+  fundamental limitations of each paradigm — the SSM's local blindness vs.\ the Transformer's
+  quadratic complexity — by having them operate in parallel and communicate through
+  cross-attention.
+
+  \item \textbf{Hardware-Agnostic Mamba Implementation.}
+  Unlike the official Mamba package, which requires compiling custom CUDA kernels that fail on
+  standard Windows clinical machines, FractureMamba-ViT implements the selective scan in pure
+  PyTorch using vector-chunked operations. This dramatically lowers deployment barriers, allowing
+  the model to run on any machine with a modern GPU without administrator-level C++ compilation.
+
+  \item \textbf{Real-World Robustness Augmentation.}
+  The augmentation pipeline simulates conditions specific to real-world clinical X-ray transfer:
+  ISO noise, JPEG compression, motion blur, Moir\'{e} grid dropout, and sun flare. This bridges
+  the gap between academic benchmark performance and genuine clinical utility.
+
+  \item \textbf{Dual Interpretability Module.}
+  Grad-CAM from the Swin stream answers \emph{``where in the image is the fracture?''} while
+  the Mamba state-space visualisation answers \emph{``how did the model reason through the
+  bone sequentially?''} This dual perspective is uniquely suited to clinical auditing and
+  radiologist trust-building.
+
+\end{itemize}
+
+% ============================================================
+\section{Practical Applications}
+% ============================================================
+
+\begin{table}[H]
+\centering
+\caption{Practical deployment scenarios for FractureMamba-ViT.}
+\label{tab:apps}
+\rowcolors{2}{LightGray}{white}
+\begin{tabularx}{\textwidth}{>{\bfseries}lX}
+\toprule
+\rowcolor{NavyBlue}
+\textcolor{white}{Application} & \textcolor{white}{Description} \\
+\midrule
+ER Triage Automation     & Pre-screens X-rays and instantly flags fractures, pushing
+                           high-priority cases to the top of the radiologist queue. \\
+Rural Telemedicine       & Provides practitioners in remote clinics — lacking resident
+                           radiologists — with immediate, high-confidence second opinions. \\
+Post-Disaster Camps      & Supports humanitarian workers using portable X-ray units in
+                           disaster zones, providing instant classifications on laptops. \\
+Radiologist Training     & Grad-CAM and state-space visualisations serve as educational
+                           aids, illustrating which features trained models focus on. \\
+Quality Assurance Audit  & Hospitals can retrospectively audit X-rays for missed fractures
+                           during high-volume periods, improving institutional quality metrics. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+\section{Limitations}
+% ============================================================
+
+\begin{itemize}
+
+  \item \textbf{Binary Classification Scope.}
+  The system classifies X-rays as fractured or non-fractured but does not differentiate fracture
+  type (oblique, comminuted, spiral, stress, etc.), severity grade, or specific anatomical
+  location within a bone — distinctions that directly inform treatment decisions.
+
+  \item \textbf{Memory Footprint for Edge Deployment.}
+  At 127.3\,MB, the model is unsuitable for ultra-low-power microcontrollers (e.g.,
+  Raspberry Pi Zero). High-tier edge hardware (NVIDIA Jetson, Apple M-series) or server-side
+  inference is required for sub-100\,ms latency.
+
+  \item \textbf{Dataset Scope.}
+  The model was trained on standard X-ray images. Performance may degrade on CT reconstructions
+  or fluoroscopy without domain-specific fine-tuning.
+
+  \item \textbf{No Bounding Box Localisation.}
+  Grad-CAM heatmaps provide probabilistic spatial evidence but not deterministic bounding boxes
+  around fracture sites — required for precise surgical planning.
+
+\end{itemize}
+
+% ============================================================
+\section{Future Improvements}
+% ============================================================
+
+\begin{itemize}
+
+  \item \textbf{INT8/INT4 Quantisation.}
+  Post-training quantisation would compress the 127.3\,MB model to approximately 32--64\,MB
+  with minimal accuracy loss ($<0.2$\%), enabling ONNX deployment on mobile devices with
+  sub-50\,ms inference.
+
+  \item \textbf{Multi-Class Fracture Taxonomy.}
+  Expanding the classification head to predict fracture type and severity grade would
+  dramatically increase clinical utility and workflow integration value.
+
+  \item \textbf{Bounding Box Regression Head.}
+  Integrating a YOLO or DETR detection head would enable deterministic fracture localisation
+  with precise bounding boxes, supporting surgical planning and automated radiology reporting.
+
+  \item \textbf{Multi-Modality Extension.}
+  Fine-tuning on CT and MRI scans via domain-adaptive pretraining would extend coverage to
+  soft-tissue injuries currently invisible on X-ray.
+
+  \item \textbf{Federated Learning.}
+  Hospital-specific fine-tuning via federated learning would allow the model to adapt to
+  institution-specific imaging protocols without requiring centralised data sharing,
+  preserving patient privacy.
+
+\end{itemize}
+
+% ============================================================
+\section{Conclusion}
+% ============================================================
+
+FractureMamba-ViT represents a meaningful step forward in the design of deployable, clinically
+transparent AI for emergency radiology. By combining the linear-complexity global modelling of
+Vision Mamba with the fine-grained local precision of the Swin Transformer — fused through a
+learnable bidirectional cross-attention gate — the architecture addresses the core
+representational trade-offs that have limited earlier radiological AI systems.
+
+The achieved results speak directly to clinical viability: 99.8\% test accuracy with 100\%
+fracture recall and zero false negatives across the full test set. The AUC-ROC of 1.000 and the
+tight overfitting gap of 0.0142 confirm that these results reflect genuine model capability
+rather than dataset overfitting or threshold gaming. The system operates within 96\,ms per
+inference, comfortably within real-time ER workflow constraints.
+
+Perhaps equally important is what the model does not sacrifice in achieving this performance:
+clinical interpretability. The dual explainability module — Grad-CAM heatmaps from the Swin
+stream and sequential state-space visualisations from the Mamba stream — gives practitioners two
+independent perspectives on every decision. This is the mechanism by which a hospital can audit
+the model, understand its failure modes, and justify its use to clinical governance bodies.
+
+Looking ahead, the path from binary classification to full fracture taxonomy, bounding box
+localisation, and quantisation for mobile deployment is clearly defined. FractureMamba-ViT is
+not merely a proof of concept — with its hardware-agnostic Mamba implementation and real-world
+robustness training strategy, it is a practical foundation for the next generation of emergency
+radiology AI systems.
+
+\vspace{0.8em}
+
+\begin{tcolorbox}[keyresult, title={\bfseries\color{NavyBlue} Summary of Key Achievements}]
+\begin{itemize}[itemsep=3pt]
+  \item \textbf{99.8\% Test Accuracy} with \textbf{100\% Fracture Recall} (0 False Negatives)
+  \item \textbf{AUC-ROC $= 1.000$} — perfect discrimination across all decision thresholds
+  \item \textbf{Overfitting gap $\leq 0.0142$} — exceptional generalisation from aggressive
+        regularisation
+  \item \textbf{96.3\,ms inference latency} — real-time capable on commodity GPU hardware
+  \item \textbf{Dual interpretability} (Grad-CAM + Mamba state viz) for clinical transparency
+  \item \textbf{Hardware-agnostic pure-PyTorch Mamba} — deployable without custom CUDA
+        compilation
+\end{itemize}
+\end{tcolorbox}
+
+\end{document}

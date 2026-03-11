@@ -15,8 +15,11 @@ logs/
 
 # Virtual environments
 venv/
-.env/
 env/
+
+# Secret keys — NEVER commit these
+.env
+*.env
 
 # IDE
 .vscode/

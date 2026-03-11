@@ -162,6 +162,40 @@ def get_train_transforms(config):
                 fill_value=0,
                 p=re["probability"],
             ))
+            
+    # Real-world WhatsApp / Camera Monitor Photo Augmentations
+    if aug_config.get("real_world_robustness", {}).get("enabled", False):
+        rw = aug_config["real_world_robustness"]
+        
+        # JPEG WhatsApp Compression
+        if rw.get("jpeg_compression", {}).get("probability", 0) > 0:
+            jc = rw["jpeg_compression"]
+            transform_list.append(A.ImageCompression(quality_lower=jc["quality_lower"], quality_upper=jc["quality_upper"], p=jc["probability"]))
+            
+        # Perspective shift (from taking photo of a monitor from an angle)
+        if rw.get("perspective", {}).get("probability", 0) > 0:
+            p = rw["perspective"]
+            transform_list.append(A.Perspective(scale=p["scale"], p=p["probability"]))
+            
+        # Camera blur from shaky hands
+        if rw.get("motion_blur", {}).get("probability", 0) > 0:
+            mb = rw["motion_blur"]
+            transform_list.append(A.MotionBlur(blur_limit=mb["blur_limit"], p=mb["probability"]))
+            
+        # Cheap smartphone sensor ISO noise
+        if rw.get("iso_noise", {}).get("probability", 0) > 0:
+            iso = rw["iso_noise"]
+            transform_list.append(A.ISONoise(color_shift=iso["color_shift"], intensity=iso["intensity"], p=iso["probability"]))
+            
+        # Monitor / Overheard hospital lights glare
+        if rw.get("sun_flare", {}).get("probability", 0) > 0:
+            sf = rw["sun_flare"]
+            transform_list.append(A.RandomSunFlare(flare_roi=(0, 0, 1, 1), angle_lower=0, angle_upper=1, num_flare_circles_lower=1, num_flare_circles_upper=3, src_radius=150, src_color=(255, 255, 255), p=sf["probability"]))
+            
+        # Moiré lines / Monitor grid
+        if rw.get("grid_dropout", {}).get("probability", 0) > 0:
+            gd = rw["grid_dropout"]
+            transform_list.append(A.GridDropout(unit_size_min=gd["unit_size"][0], unit_size_max=gd["unit_size"][1], random_offset=gd["random_offset"], p=gd["probability"]))
     
     # Normalize and convert to tensor
     transform_list.extend([
