@@ -1,0 +1,82 @@
+# ─── Swin-Tiny Fracture Type Classifier Config ───────────────────────────────
+# Layer 3 of the 3-layer clinical pipeline
+# 10-class fracture type classification
+
+seed: 42
+deterministic: false
+
+data:
+  root_dir: "data/Bone Break Classification/Bone Break Classification"
+  image_size: 224
+  num_workers: 4
+  train_split: 0.70
+  val_split: 0.15
+  # test_split: 0.15 (remainder)
+
+training:
+  epochs: 60
+  batch_size: 32
+  gradient_accumulation_steps: 1
+  mixed_precision: true
+  gradient_clip_norm: 1.0
+  label_smoothing: 0.1
+
+  optimizer:
+    lr: 3.0e-4        # head LR — backbone gets 0.1x = 3e-5
+    weight_decay: 0.05
+    betas: [0.9, 0.999]
+
+  scheduler:
+    T_0: 20
+    T_mult: 1
+    eta_min: 1.0e-6
+
+  focal_loss:
+    gamma: 2.0
+
+  warmup:
+    epochs: 5
+    start_lr: 1.0e-6
+
+  early_stopping:
+    patience: 15
+    min_delta: 0.1   # 0.1% improvement threshold
+
+  swa:
+    enabled: false
+
+model:
+  name: "swin_tiny_patch4_window7_224"
+  pretrained: true
+  drop_path_rate: 0.2
+  head:
+    hidden_dim: 256
+    dropout: 0.35
+
+augmentation:
+  train:
+    random_resized_crop:
+      scale: [0.7, 1.0]
+    horizontal_flip: true
+    vertical_flip: false
+    rotation_degrees: 15
+    color_jitter:
+      brightness: 0.3
+      contrast: 0.3
+      saturation: 0.1
+    rand_augment:
+      n: 2
+      m: 9
+    random_erasing:
+      prob: 0.25
+      scale: [0.02, 0.2]
+    mixup:
+      enabled: true
+      alpha: 0.4
+    mixup_cutmix_prob: 0.5
+  val:
+    center_crop: true
+
+paths:
+  checkpoint_dir: "runs/fracture_type"
+  results_dir: "results/fracture_type"

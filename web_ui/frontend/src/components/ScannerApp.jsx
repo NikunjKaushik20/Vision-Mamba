@@ -154,16 +154,21 @@ function ResultsDashboard({ result, file, onReset }) {
                         )}
                     </div>
                     <div>
-                        <div className="verdict-label">Prediction</div>
-                        <div className={`verdict-value ${verdictClass}`}>{result.prediction}</div>
+                        <div className="verdict-label">Result</div>
+                        <div className={`verdict-value ${verdictClass}`}>
+                            {isFractured ? '🦴 Fracture Detected' : '✅ No Fracture Found'}
+                        </div>
                     </div>
                 </div>
                 <div className="confidence-section">
                     <div className="conf-label">
-                        <span>Confidence</span><span>{conf}%</span>
+                        <span>AI Confidence</span><span>{conf}%</span>
                     </div>
                     <div className="conf-track">
                         <div className="conf-fill high" style={{ width: `${conf}%` }} />
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                        {conf >= 90 ? 'Very high confidence — result is reliable' : conf >= 75 ? 'Good confidence — result is likely accurate' : 'Moderate confidence — consider clinical review'}
                     </div>
                 </div>
                 <button className="btn btn-ghost" onClick={onReset}>
@@ -174,29 +179,43 @@ function ResultsDashboard({ result, file, onReset }) {
 
             {/* Visualization grid */}
             <div className="viz-grid">
-                {/* Original */}
+                {/* Original X-Ray — plain */}
                 <div className="viz-card">
                     <div className="viz-card-header">
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        Input X-Ray
+                        Your X-Ray
                     </div>
                     <div className="viz-image-wrap" style={{ background: '#111' }}>
-                        <img src={URL.createObjectURL(file)} alt="Input X-ray" style={{ maxHeight: 280, objectFit: 'contain' }} />
+                        <XRayWithBbox file={file} bbox={null} />
                     </div>
-                    <div className="viz-footer">Original uploaded scan</div>
+                    <div className="viz-footer">The original image you uploaded</div>
                 </div>
 
-                {/* GradCAM */}
+                {/* YOLO Localisation */}
                 <div className="viz-card">
                     <div className="viz-card-header">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>
-                        Swin Grad-CAM
-                        <span className="viz-badge swin">Swin</span>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path strokeLinecap="round" strokeLinejoin="round" d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+                        YOLO Fracture Localisation
+                        {result.bbox && (
+                            <span className="viz-badge swin" style={{ background: 'rgba(220,38,38,0.15)', color: '#f87171', border: '1px solid rgba(220,38,38,0.3)' }}>YOLO</span>
+                        )}
                     </div>
-                    <div className="viz-image-wrap">
-                        <img src={result.gradcam_base64} alt="Grad-CAM" style={{ maxHeight: 280, objectFit: 'contain' }} />
+                    <div className="viz-image-wrap" style={{ background: '#111', position: 'relative' }}>
+                        {result.bbox ? (
+                            <XRayWithBbox file={file} bbox={result.bbox} />
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 280, color: 'var(--text-muted)', gap: '0.5rem', fontSize: '0.9rem' }}>
+                                <svg width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <span>{isFractured ? 'YOLO localisation not available for this scan' : 'No fracture detected — no bounding box'}</span>
+                            </div>
+                        )}
                     </div>
-                    <div className="viz-footer">Heatmap of fracture-driving regions in the Swin Transformer stream</div>
+                    <div className="viz-footer">
+                        {result.bbox
+                            ? <>🟥 <strong>Red box</strong> = fracture region located by YOLO · Confidence: {Math.round(result.bbox.conf * 100)}%</>
+                            : <>{isFractured ? 'Fracture detected but YOLO could not localise the region' : 'No fracture found in this scan'}</>
+                        }
+                    </div>
                 </div>
 
                 {/* Mamba */}
@@ -204,16 +223,116 @@ function ResultsDashboard({ result, file, onReset }) {
                     <div className="viz-card" style={{ gridColumn: '1 / -1' }}>
                         <div className="viz-card-header">
                             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                            Mamba Sequential Attention
-                            <span className="viz-badge mamba">SSM</span>
+                            Bone Pattern Analysis
+                            <span className="viz-badge mamba" title="Vision Mamba AI stream">Advanced</span>
                         </div>
                         <div className="viz-image-wrap" style={{ background: 'var(--bg-surface-2)' }}>
-                            <img src={result.mamba_base64} alt="Mamba Attention" style={{ width: '100%', maxHeight: 240, objectFit: 'contain' }} />
+                            <img src={result.mamba_base64} alt="Bone pattern analysis" style={{ width: '100%', maxHeight: 240, objectFit: 'contain' }} />
                         </div>
-                        <div className="viz-footer">Token L₂ norm evolution across the patch sequence — peaks indicate high-attention zones in the Vision Mamba stream</div>
+                        <div className="viz-footer">📈 This graph shows how the AI scanned across your bone — <strong>spikes (peaks) indicate where it found abnormalities</strong></div>
                     </div>
                 )}
             </div>
+
+            {/* Disclaimer */}
+            <div style={{
+                marginTop: '1.5rem',
+                padding: '0.85rem 1.2rem',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(245,158,11,0.08)',
+                border: '1px solid rgba(245,158,11,0.2)',
+                fontSize: '0.82rem',
+                color: 'var(--text-muted)',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.6rem'
+            }}>
+                <span style={{ fontSize: '1rem' }}>⚠️</span>
+                <span>This AI tool is for <strong>screening assistance only</strong>. Always consult a qualified doctor or radiologist before making any medical decisions.</span>
+            </div>
+        </div>
+    );
+}
+
+
+
+/* ---- X-Ray with optional YOLO bounding box overlay ---- */
+function XRayWithBbox({ file, bbox }) {
+    const imgRef = React.useRef(null);
+    const canvasRef = React.useRef(null);
+    const [imgUrl] = React.useState(() => URL.createObjectURL(file));
+
+    const drawBox = React.useCallback(() => {
+        const img = imgRef.current;
+        const canvas = canvasRef.current;
+        if (!img || !canvas || !bbox) return;
+
+        const { naturalWidth: nw, naturalHeight: nh, offsetWidth: dw, offsetHeight: dh } = img;
+        // Canvas should match the displayed image size
+        canvas.width  = dw;
+        canvas.height = dh;
+        canvas.style.width  = dw + 'px';
+        canvas.style.height = dh + 'px';
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, dw, dh);
+
+        // Convert normalized coords to displayed pixel coords
+        const x1 = bbox.x1 * dw;
+        const y1 = bbox.y1 * dh;
+        const x2 = bbox.x2 * dw;
+        const y2 = bbox.y2 * dh;
+        const bw = x2 - x1;
+        const bh = y2 - y1;
+
+        // Semi-transparent fill
+        ctx.fillStyle = 'rgba(220, 38, 38, 0.12)';
+        ctx.fillRect(x1, y1, bw, bh);
+
+        // Bold red border
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x1, y1, bw, bh);
+
+        // Corner accents (like a targeting reticle)
+        const cs = Math.min(bw, bh) * 0.18; // corner size
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#fbbf24'; // amber accent
+        [[x1, y1], [x2, y1], [x1, y2], [x2, y2]].forEach(([cx, cy], i) => {
+            const sx = i % 2 === 0 ? 1 : -1;
+            const sy = i < 2 ? 1 : -1;
+            ctx.beginPath();
+            ctx.moveTo(cx + sx * cs, cy);
+            ctx.lineTo(cx, cy);
+            ctx.lineTo(cx, cy + sy * cs);
+            ctx.stroke();
+        });
+
+        // Label
+        const label = `Fracture ${Math.round(bbox.conf * 100)}%`;
+        ctx.font = 'bold 13px Inter, sans-serif';
+        const tw = ctx.measureText(label).width;
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(x1, y1 - 24, tw + 12, 22);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(label, x1 + 6, y1 - 7);
+    }, [bbox]);
+
+    return (
+        <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
+            <img
+                ref={imgRef}
+                src={imgUrl}
+                alt="Input X-ray"
+                style={{ maxHeight: 280, objectFit: 'contain', display: 'block' }}
+                onLoad={drawBox}
+            />
+            {bbox && (
+                <canvas
+                    ref={canvasRef}
+                    style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+                />
+            )}
         </div>
     );
 }
@@ -319,15 +438,15 @@ export default function ScannerApp({ theme, toggleTheme }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                     {error && (
                         <div style={{ padding: '1rem 1.5rem', borderRadius: 'var(--radius-md)', background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.25)', color: 'var(--danger)', fontSize: '0.92rem' }}>
-                            <strong>Error:</strong> {error}
+                            <strong>Something went wrong:</strong> {error}
                         </div>
                     )}
                     {!file && !loading && <UploadZone onFile={handleFile} />}
                     {loading && (
                         <div className="analyzing-card fade-up">
                             <div className="spinner" />
-                            <div style={{ fontWeight: 700, fontSize: '1.2rem', marginBottom: '0.5rem' }}>Analyzing X-Ray…</div>
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.92rem' }}>Running dual-stream inference · Generating heatmaps</div>
+                            <div style={{ fontWeight: 700, fontSize: '1.2rem', marginBottom: '0.5rem' }}>Analyzing your X-Ray…</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.92rem' }}>The AI is scanning the image for fractures — this usually takes a few seconds</div>
                         </div>
                     )}
                     {result && file && <ResultsDashboard result={result} file={file} onReset={() => { setFile(null); setResult(null); }} />}

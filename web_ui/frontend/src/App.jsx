@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
-import ScannerApp from './components/ScannerApp';
+import Dashboard from './components/Dashboard';
 
 function App() {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('fm-theme') || 'light';
+    return localStorage.getItem('fm-theme') || 'dark';
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     localStorage.setItem('fm-theme', theme);
   }, [theme]);
 
@@ -19,7 +23,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage theme={theme} toggleTheme={toggleTheme} />} />
-        <Route path="/scan" element={<ScannerApp theme={theme} toggleTheme={toggleTheme} />} />
+        <Route path="/scan" element={<Dashboard theme={theme} toggleTheme={toggleTheme} />} />
       </Routes>
     </BrowserRouter>
   );

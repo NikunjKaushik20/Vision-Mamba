@@ -2,7 +2,7 @@
 # Bone Fracture Classification - IIT Mandi Hackathon 2025
 
 data:
-  root_dir: "d:/Vision-Mamba/Bone_Fracture_Binary_Classification/Bone_Fracture_Binary_Classification"
+  root_dir: "d:/Vision-Mamba/data/Bone_Fracture_Binary_Classification/Bone_Fracture_Binary_Classification"
   image_size: 224
   num_classes: 2
   class_names: ["fractured", "not fractured"]

@@ -38,6 +38,12 @@ async def startup_event():
 async def predict(file: UploadFile = File(...)):
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
+
+    if model_manager.model is None:
+        raise HTTPException(
+            status_code=503,
+            detail=model_manager.load_error or "Classifier model is still unavailable. Check backend startup logs."
+        )
     
     try:
         # Read image
@@ -62,7 +68,14 @@ async def chat(request: ChatRequest):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "model_loaded": model_manager.model is not None}
+    model_loaded = model_manager.model is not None
+    return {
+        "status": "healthy" if model_loaded else "degraded",
+        "model_loaded": model_loaded,
+        "load_error": model_manager.load_error,
+        "used_swin_fallback": model_manager.used_swin_fallback,
+        "yolo_loaded": model_manager.yolo_model is not None,
+    }
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

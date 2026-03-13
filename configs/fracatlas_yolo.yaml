@@ -1,0 +1,12 @@
+# YOLOv8 Dataset Config — FractAtlas Fracture Localization
+# Used by train_yolo.py
+
+path: d:/Vision-Mamba/data/fracatlas_yolo  # dataset root
+
+train: images/train
+val:   images/val
+test:  images/test
+
+nc: 1        # number of classes
+names:
+  0: fractured

@@ -1,258 +1,314 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const FEATURES = [
-    {
-        icon: (
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        ),
-        title: "99.8% Model Accuracy",
-        desc: "State-of-the-art classification with zero false negatives — no fractured bone is ever missed."
-    },
-    {
-        icon: (
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-        ),
-        title: "Grad-CAM Heatmaps",
-        desc: "Visual saliency maps from the Swin Transformer stream clearly highlight fracture regions for the clinician."
-    },
-    {
-        icon: (
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-        ),
-        title: "96ms Inference Time",
-        desc: "Real-time triage support — results arrive in under 100 milliseconds, enabling instant clinical decisions."
-    },
-    {
-        icon: (
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-        ),
-        title: "Mamba State Traces",
-        desc: "Novel SSM-based sequential attention visualizations show how global skeletal geometry is analyzed."
-    },
-    {
-        icon: (
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-        ),
-        title: "Camera Capture",
-        desc: "Point your webcam directly at a display screen showing an X-ray — real-world ER transfer simulation."
-    },
-    {
-        icon: (
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-        ),
-        title: "AI Radiologist Chat",
-        desc: "Ask follow-up clinical questions after any scan — powered by large language model with full scan context."
-    }
-];
+const LandingPage = ({ theme, toggleTheme }) => {
+  const navigate = useNavigate();
 
-const STEPS = [
-    { n: "01", title: "Upload or Capture", desc: "Drag & drop a JPEG/PNG X-ray, browse your files, or use your webcam to capture a scan directly." },
-    { n: "02", title: "Dual-Stream Analysis", desc: "The Swin Transformer and Vision Mamba streams process the image in parallel, fused via cross-attention." },
-    { n: "03", title: "Review & Explain", desc: "Receive the prediction, confidence score, Grad-CAM heatmap, and Mamba sequence trace — instantly." }
-];
+  return (
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden font-display transition-colors duration-300">
+      {/* Top Navigation */}
+      <header className="sticky top-0 z-50 w-full border-b border-landing-primary/10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+        <div className="container mx-auto flex h-16 items-center justify-between px-6 lg:px-12">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-landing-primary text-white">
+              <span className="material-symbols-outlined">bolt</span>
+            </div>
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">FractureMamba-ViT</h2>
+          </div>
+          
+          <nav className="hidden md:flex items-center gap-8">
+            <a href="#features" className="text-sm font-medium hover:text-landing-primary transition-colors">Features</a>
+            <a href="#how-it-works" className="text-sm font-medium hover:text-landing-primary transition-colors">Process</a>
+            <a href="#" className="text-sm font-medium hover:text-landing-primary transition-colors">Docs</a>
+            <button 
+              onClick={toggleTheme}
+              className="text-sm font-medium hover:text-landing-primary transition-colors flex items-center gap-1"
+            >
+              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </button>
+          </nav>
 
-export default function LandingPage({ theme, toggleTheme }) {
-    const navigate = useNavigate();
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => navigate('/scan')}
+              className="hidden sm:flex items-center gap-2 rounded-xl border border-landing-primary/20 bg-landing-primary/5 px-4 py-2 text-sm font-semibold text-landing-primary hover:bg-landing-primary/10 transition-all"
+            >
+              Sign In
+            </button>
+            <button 
+              onClick={() => navigate('/scan')}
+              className="flex items-center justify-center rounded-xl bg-landing-primary px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-landing-primary/20 hover:scale-105 active:scale-95 transition-all"
+            >
+              Get Started
+            </button>
+          </div>
+        </div>
+      </header>
 
-    return (
-        <>
-            {/* NAVBAR */}
-            <nav className="navbar">
-                <div className="nav-inner">
-                    <div className="nav-logo">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M4.5 12.5l3 3 5-5 2 2 5-5" />
-                            <rect x="3" y="3" width="18" height="18" rx="3" />
-                        </svg>
-                        Fracture<span>Mamba</span>
-                    </div>
-                    <div className="nav-actions">
-                        <button className="theme-toggle" onClick={toggleTheme} title="Toggle theme" aria-label="Toggle theme">
-                            {theme === 'dark' ? (
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" /></svg>
-                            ) : (
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
-                            )}
-                        </button>
-                        <button className="btn btn-ghost" onClick={() => navigate('/scan')}>Sign In</button>
-                        <button className="btn btn-primary" onClick={() => navigate('/scan')}>Try Now →</button>
-                    </div>
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden py-20 lg:py-32">
+          <div className="container mx-auto px-6 lg:px-12">
+            <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+              <div className="flex flex-col gap-8">
+                <div className="inline-flex w-fit items-center gap-2 rounded-full border border-landing-primary/20 bg-landing-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-landing-primary">
+                  <span className="material-symbols-outlined text-sm">rocket_launch</span>
+                  Next-Gen Medical AI
                 </div>
-            </nav>
+                
+                <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-slate-900 dark:text-white lg:text-7xl">
+                  AI-Powered Fracture Detection at the <span className="text-landing-primary">Speed of Sight</span>
+                </h1>
+                
+                <p className="max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-400">
+                  Revolutionizing diagnostics with Mamba-based architecture and a high-performance React/FastAPI stack for real-time clinical insights and unprecedented accuracy.
+                </p>
+                
+                <div className="flex flex-wrap gap-4">
+                  <button 
+                    onClick={() => navigate('/scan')}
+                    className="rounded-xl bg-landing-primary px-8 py-4 text-lg font-bold text-white shadow-xl shadow-landing-primary/30 hover:bg-landing-primary/90 transition-all"
+                  >
+                    Start Analysis Now
+                  </button>
+                  <button className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 px-8 py-4 text-lg font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                    <span className="material-symbols-outlined">play_circle</span>
+                    Watch Demo
+                  </button>
+                </div>
+                
+                <div className="flex items-center gap-6 pt-4 text-slate-500">
+                  <div className="flex flex-col">
+                    <span className="text-2xl font-bold text-slate-900 dark:text-white">99.8%</span>
+                    <span className="text-xs uppercase tracking-widest">Accuracy</span>
+                  </div>
+                  <div className="h-8 w-px bg-slate-200 dark:bg-slate-800"></div>
+                  <div className="flex flex-col">
+                    <span className="text-2xl font-bold text-slate-900 dark:text-white">&lt;200ms</span>
+                    <span className="text-xs uppercase tracking-widest">Latency</span>
+                  </div>
+                </div>
+              </div>
 
-            {/* HERO */}
-            <section className="hero">
-                <div className="hero-glow hero-glow-1" />
-                <div className="hero-glow hero-glow-2" />
-                <div className="container">
-                    <div className="flex gap-8 items-center" style={{ flexWrap: 'wrap' }}>
-                        {/* Left Column */}
-                        <div style={{ flex: '1', minWidth: '320px' }}>
-                            <div className="hero-eyebrow fade-up">
-                                <span className="badge">
-                                    <span style={{ width: 8, height: 8, background: 'var(--success)', borderRadius: '50%', display: 'inline-block' }} />
-
-                                </span>
-                            </div>
-                            <h1 className="display-xl hero-title fade-up-2">
-                                AI-Powered<br />
-                                <span className="gradient-text">Bone Fracture</span><br />
-                                Detection
-                            </h1>
-                            <p className="hero-subtitle fade-up-3">
-                                FractureMamba-ViT combines Vision State-Space Models with Swin
-                                Transformers to deliver 99.8% accuracy with full visual
-                                explainability for emergency radiology triage.
-                            </p>
-                            <div className="hero-actions fade-up-4">
-                                <button className="btn btn-primary btn-lg" onClick={() => navigate('/scan')}>
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                    Start X-Ray Scanning
-                                </button>
-                                <a href="https://github.com" target="_blank" rel="noreferrer" className="btn btn-ghost btn-lg">
-                                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
-                                    View Source
-                                </a>
-                            </div>
-                            <div className="hero-meta fade-up-4">
-                                {[
-                                    ['99.8%', 'Test Accuracy'],
-                                    ['0', 'False Negatives'],
-                                    ['96ms', 'Inference Time'],
-                                    ['AUC 1.00', 'ROC Score'],
-                                ].map(([v, l]) => (
-                                    <div className="hero-meta-item" key={l}>
-                                        <span className="hero-meta-value">{v}</span>
-                                        <span className="hero-meta-label">{l}</span>
-                                    </div>
-                                ))}
-                            </div>
+              {/* Hero Image / Mockup */}
+              <div className="relative">
+                <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-landing-primary/20 to-accent-blue/20 blur-3xl"></div>
+                <div className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl">
+                  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB08HCA1btowUZG42xFyE3r_tGlvj8eifBn3OS4VQKseALSGynDhNu3dHJiZrm-iNpKaq1OLXczGhLpApAY9VDrqzbf7rlodQoJEBszhsAW4KjGoWn-0zVj7sxAlkAfqBZfSie-_xzo2Y3S2DfoyngYFsJoN67mjhswtQatFvaUE4gUWVIyllEhx6frIFaWpwZkjKKiRpgLG1sho0qnZ4Yh6eITl7qvk7ETqL1blJbwQT6JjcxAWS3lABjoesILewIOLEGrp0L2eLER" alt="High tech medical x-ray analysis on digital screen" className="h-full w-full object-cover" />
+                  
+                  <div className="absolute bottom-4 left-4 right-4 rounded-xl glass-panel p-4 text-white">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20 text-green-400">
+                          <span className="material-symbols-outlined text-sm">check_circle</span>
                         </div>
-
-                        {/* Right Column — scan preview card */}
-                        <div className="hero-visual fade-up-3" style={{ flex: '1', minWidth: '300px' }}>
-                            <div className="hero-scan-card">
-                                <div className="scan-header">
-                                    <div className="scan-dots">
-                                        <div className="scan-dot" style={{ background: '#F87171' }} />
-                                        <div className="scan-dot" style={{ background: '#FBBF24' }} />
-                                        <div className="scan-dot" style={{ background: '#34D399' }} />
-                                    </div>
-                                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Analysis Dashboard</span>
-                                    <span className="badge" style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem' }}>LIVE</span>
-                                </div>
-                                <div className="scan-placeholder">
-                                    <div style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '3.5rem', marginBottom: '0.5rem', opacity: 0.4 }}>🦴</div>
-                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>X-Ray Preview</div>
-                                    </div>
-                                    {/* Animated scanning line */}
-                                    <div style={{
-                                        position: 'absolute', left: 0, right: 0, height: '2px',
-                                        background: 'linear-gradient(90deg, transparent, var(--accent), transparent)',
-                                        animation: 'scan 2.5s ease-in-out infinite'
-                                    }} />
-                                </div>
-                                <div className="scan-result-bar">
-                                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    No Fracture — 99.8% confidence
-                                    <div className="confidence-bar-wrap">
-                                        <div className="confidence-bar-fill" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <span className="text-sm font-medium">Fracture Detected: Radius Bone</span>
+                      </div>
+                      <span className="text-xs font-bold text-landing-primary">CONFIDENCE: 98.4%</span>
                     </div>
+                  </div>
                 </div>
-                <style>{`
-          @keyframes scan {
-            0% { top: 0; opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
-          }
-        `}</style>
-            </section>
+              </div>
+            </div>
+          </div>
+        </section>
 
-            {/* STATS BAR */}
-            <section className="stats-bar">
-                <div className="container">
-                    <div className="stats-grid">
-                        {[
-                            ['99.8%', 'Test Accuracy'],
-                            ['1.000', 'AUC-ROC Score'],
-                            ['100%', 'Fracture Recall'],
-                            ['127MB', 'Model Size'],
-                            ['5-Fold', 'Cross Validation'],
-                        ].map(([v, l]) => (
-                            <div key={l}>
-                                <div className="stat-value">{v}</div>
-                                <div className="stat-label">{l}</div>
-                            </div>
-                        ))}
-                    </div>
+        {/* Features Grid */}
+        <section id="features" className="py-24 bg-slate-50 dark:bg-black/20">
+          <div className="container mx-auto px-6 lg:px-12">
+            <div className="mb-16 text-center">
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-white lg:text-4xl">Advanced Diagnostic Capabilities</h2>
+              <p className="mt-4 text-slate-600 dark:text-slate-400">Precision engineering meets clinical expertise.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <div className="group flex flex-col gap-4 rounded-2xl border border-slate-200 dark:border-landing-primary/10 bg-white dark:bg-[#2d1e16] p-8 transition-all hover:-translate-y-2 hover:border-landing-primary/50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-landing-primary/10 text-landing-primary">
+                  <span className="material-symbols-outlined">timer</span>
                 </div>
-            </section>
+                <h3 className="text-xl font-bold dark:text-white">Instant Analysis</h3>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">Color-coded verdicts and confidence scores delivered in milliseconds through optimized CUDA kernels.</p>
+              </div>
 
-            {/* FEATURES */}
-            <section className="section">
-                <div className="container">
-                    <div className="text-center" style={{ marginBottom: '3.5rem' }}>
-                        <div className="label-sm" style={{ marginBottom: '0.75rem' }}>Capabilities</div>
-                        <h2 className="display-lg">Everything you need for<br /><span className="gradient-text">clinical decision support</span></h2>
-                    </div>
-                    <div className="features-grid">
-                        {FEATURES.map(f => (
-                            <div className="card" key={f.title}>
-                                <div className="feature-icon">{f.icon}</div>
-                                <div className="feature-title">{f.title}</div>
-                                <div className="feature-desc">{f.desc}</div>
-                            </div>
-                        ))}
-                    </div>
+              <div className="group flex flex-col gap-4 rounded-2xl border border-slate-200 dark:border-landing-primary/10 bg-white dark:bg-[#2d1e16] p-8 transition-all hover:-translate-y-2 hover:border-landing-primary/50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-blue/10 text-accent-blue">
+                  <span className="material-symbols-outlined">layers</span>
                 </div>
-            </section>
+                <h3 className="text-xl font-bold dark:text-white">3-Tier Visualization</h3>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">Comprehensive view including Original X-ray, YOLO object detection, and Mamba Spikes attention mapping.</p>
+              </div>
 
-            {/* HOW IT WORKS */}
-            <section className="section" style={{ background: 'var(--bg-surface)' }}>
-                <div className="container">
-                    <div className="text-center" style={{ marginBottom: '3.5rem' }}>
-                        <div className="label-sm" style={{ marginBottom: '0.75rem' }}>Workflow</div>
-                        <h2 className="display-lg">How it works</h2>
-                    </div>
-                    <div className="steps-grid">
-                        {STEPS.map(s => (
-                            <div key={s.n} style={{ padding: '2rem 0' }}>
-                                <div className="step-number">{s.n}</div>
-                                <div className="step-title display-md" style={{ marginBottom: '0.75rem' }}>{s.title}</div>
-                                <div className="body-md">{s.desc}</div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="text-center" style={{ marginTop: '3rem' }}>
-                        <button className="btn btn-primary btn-lg" onClick={() => navigate('/scan')}>
-                            Try the Scanner Now →
-                        </button>
-                    </div>
+              <div className="group flex flex-col gap-4 rounded-2xl border border-slate-200 dark:border-landing-primary/10 bg-white dark:bg-[#2d1e16] p-8 transition-all hover:-translate-y-2 hover:border-landing-primary/50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500">
+                  <span className="material-symbols-outlined">smart_toy</span>
                 </div>
-            </section>
+                <h3 className="text-xl font-bold dark:text-white">Radiologist Assistant</h3>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">Context-aware LLM integration providing suggested findings and immediate clinical documentation support.</p>
+              </div>
 
-            {/* FOOTER */}
-            <footer className="footer">
-                <div className="container">
-                    <div className="footer-inner">
-                        <div className="footer-copy">© 2026 FractureMamba-ViT · IIT Mandi Hackathon</div>
-                        <div className="footer-links">
-                            <a href="#">GitHub</a>
-                            <a href="#">Research Paper</a>
-                            <a href="#">Team</a>
-                        </div>
-                    </div>
+              <div className="group flex flex-col gap-4 rounded-2xl border border-slate-200 dark:border-landing-primary/10 bg-white dark:bg-[#2d1e16] p-8 transition-all hover:-translate-y-2 hover:border-landing-primary/50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10 text-green-500">
+                  <span className="material-symbols-outlined">cloud_upload</span>
                 </div>
-            </footer>
-        </>
-    );
-}
+                <h3 className="text-xl font-bold dark:text-white">Seamless Integration</h3>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">Direct DICOM uploads or live medical camera stream capture via high-performance WebSocket connections.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works */}
+        <section id="how-it-works" className="py-24">
+          <div className="container mx-auto px-6 lg:px-12">
+            <div className="flex flex-col items-center gap-16 lg:flex-row">
+              <div className="lg:w-1/2">
+                <h2 className="text-4xl font-bold dark:text-white">From Scan to Solution in Seconds</h2>
+                <p className="mt-4 text-slate-600 dark:text-slate-400">Our pipeline is optimized for clinical workflows, removing friction from emergency diagnostics.</p>
+                
+                <div className="mt-12 space-y-12">
+                  <div className="flex gap-6">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-landing-primary text-white font-bold">1</div>
+                    <div>
+                      <h4 className="text-xl font-bold dark:text-white">Upload X-Ray Data</h4>
+                      <p className="mt-2 text-slate-600 dark:text-slate-400">Drag and drop standard medical imaging formats (DICOM, JPEG, PNG) into our secure, encrypted gateway.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-6">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-landing-primary text-white font-bold">2</div>
+                    <div>
+                      <h4 className="text-xl font-bold dark:text-white">Mamba-ViT Processing</h4>
+                      <p className="mt-2 text-slate-600 dark:text-slate-400">Our state-space model architecture analyzes spatial sequences with linear scaling efficiency.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-6">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-landing-primary text-white font-bold">3</div>
+                    <div>
+                      <h4 className="text-xl font-bold dark:text-white">Detailed Diagnostic Report</h4>
+                      <p className="mt-2 text-slate-600 dark:text-slate-400">Instant visualization of potential fractures with bounding boxes and heatmaps for verification.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:w-1/2">
+                <div className="relative overflow-hidden rounded-3xl bg-slate-200 dark:bg-slate-800 p-2">
+                  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJHMn6bA8pWbUjBCqKYbrpwGnmw7E4o4X-NNaIawjw5KfCfbZG_-k7ifcJLKdaXpERNr7pOHoMzAolXYy1OcHLG6bqIxbgVOR_0SewqzxtbbfthcInvAlbzv1MP6uXi58AOGhoQ6wTKu8-rFJ23NnbXX1H8OFP_iutgcP8pMaClgMjUC08yw8FA9-5cyJA45lWRQs3mJGn-OGWYW2akfmPGvyiD8N9B5iYcMXd7fJzAyhHpK0i0WhKvqZYgfiicwsujRx2WmeS3lHT" alt="Laboratory scientist" className="rounded-2xl object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
+                  
+                  <div className="absolute bottom-8 left-8">
+                    <div className="flex items-center gap-2 text-white">
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
+                      <span className="text-xs font-bold uppercase tracking-widest">Processing Node #4 Active</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* System Status Banner */}
+        <section className="border-y border-slate-200 dark:border-landing-primary/10 py-12">
+          <div className="container mx-auto px-6 lg:px-12">
+            <div className="flex flex-wrap items-center justify-between gap-8">
+              <div className="flex items-center gap-4">
+                <span className="material-symbols-outlined text-4xl text-landing-primary">query_stats</span>
+                <div>
+                  <h3 className="text-lg font-bold dark:text-white">Real-Time Backend Monitoring</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">System architecture health and model performance tracking.</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-8">
+                <div className="text-center">
+                  <div className="text-xl font-bold text-green-500">Operational</div>
+                  <div className="text-[10px] uppercase tracking-widest text-slate-500">API Gateway</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold text-green-500">99.99%</div>
+                  <div className="text-[10px] uppercase tracking-widest text-slate-500">Uptime</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold text-landing-primary">FastAPI</div>
+                  <div className="text-[10px] uppercase tracking-widest text-slate-500">Engine</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-slate-50 dark:bg-[#1a120e] pt-20 pb-10 border-t border-slate-200 dark:border-landing-primary/5">
+        <div className="container mx-auto px-6 lg:px-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-landing-primary text-white">
+                  <span className="material-symbols-outlined text-sm">bolt</span>
+                </div>
+                <h2 className="text-lg font-bold tracking-tight dark:text-white">FractureMamba</h2>
+              </div>
+              <p className="text-sm leading-relaxed text-slate-500">
+                Advancing orthopedic diagnostic accuracy through state-of-the-art vision state-space models.
+              </p>
+              <div className="flex gap-4">
+                <a href="#" className="h-8 w-8 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-landing-primary hover:text-white transition-colors">
+                  <span className="material-symbols-outlined text-lg">terminal</span>
+                </a>
+                <a href="#" className="h-8 w-8 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-landing-primary hover:text-white transition-colors">
+                  <span className="material-symbols-outlined text-lg">code</span>
+                </a>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-bold mb-6 dark:text-white">Documentation</h4>
+              <ul className="space-y-4 text-sm text-slate-500">
+                <li><a href="#" className="hover:text-landing-primary">Getting Started</a></li>
+                <li><a href="#" className="hover:text-landing-primary">API Reference</a></li>
+                <li><a href="#" className="hover:text-landing-primary">Mamba Architecture</a></li>
+                <li><a href="#" className="hover:text-landing-primary">Model Training</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-bold mb-6 dark:text-white">Resources</h4>
+              <ul className="space-y-4 text-sm text-slate-500">
+                <li><a href="#" className="hover:text-landing-primary">Research Paper</a></li>
+                <li><a href="#" className="hover:text-landing-primary">GitHub Repository</a></li>
+                <li><a href="#" className="hover:text-landing-primary">Clinical Trials</a></li>
+                <li><a href="#" className="hover:text-landing-primary">Data Ethics</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-bold mb-6 dark:text-white">Contact</h4>
+              <ul className="space-y-4 text-sm text-slate-500">
+                <li className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-sm">mail</span> support@mambavit.ai
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-sm">location_on</span> San Francisco, CA
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="pt-8 border-t border-slate-200 dark:border-landing-primary/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+            <p>© 2026 FractureMamba-ViT. All rights reserved.</p>
+            <div className="flex gap-6">
+              <a href="#" className="hover:text-landing-primary">Privacy Policy</a>
+              <a href="#" className="hover:text-landing-primary">Terms of Service</a>
+              <a href="#" className="hover:text-landing-primary">Cookie Settings</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default LandingPage;

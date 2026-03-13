@@ -1,0 +1,7 @@
+metric_name,overall_value,class_Avulsion fracture_value,class_Comminuted fracture_value,class_Fracture Dislocation_value,class_Greenstick fracture_value,class_Hairline Fracture_value,class_Impacted fracture_value,class_Longitudinal fracture_value,class_Oblique fracture_value,class_Pathological fracture_value,class_Spiral Fracture_value,interpretation
+Accuracy,42.353,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Overall test set correctness
+Macro F1-Score,0.392,0.526,0.350,0.455,0.636,0.564,0.190,0.286,0.190,0.432,0.286,Balanced per-class F1
+Precision,0.391,0.526,0.389,0.500,0.560,0.478,0.222,0.250,0.250,0.471,0.267,Positive prediction reliability
+Recall,0.405,0.526,0.318,0.417,0.737,0.688,0.167,0.333,0.154,0.400,0.308,Detection rate per class
+AUC-ROC,0.818,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Threshold-independent discriminability
+Training_Time_min,62.7,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Total training time in minutes
