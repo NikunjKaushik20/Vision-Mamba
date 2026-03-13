@@ -1,5 +1,6 @@
 # Dataset (too large for GitHub)
 Bone_Fracture_Binary_Classification/
+data/
 
 # Checkpoints tracked via Git LFS (see .gitattributes)
 
@@ -28,3 +29,4 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
