@@ -69,9 +69,9 @@ FractureMamba-ViT uses an **OR-gate ensemble** strategy to maximize recall — i
      │  Vision Mamba   │     │ Swin Transformer│     │     YOLOv8      │
      │     (SSM)       │     │   (Attention)   │     │   (FracAtlas)   │
      │                 │     │                 │     │                 │
-     │  Bi-dir SSM     │     │ Shifted Window  │     │  Object Det.   │
-     │  4 blocks       │     │ Self-Attention  │     │  + Bounding    │
-     │  d=192          │     │ Pretrained      │     │    Box         │
+     │  Bi-dir SSM     │     │ Shifted Window  │     │  Object Det.    │
+     │  4 blocks       │     │ Self-Attention  │     │  + Bounding     │
+     │  d=192          │     │ Pretrained      │     │    Box          │
      └────────┬────────┘     └────────┬────────┘     └────────┬────────┘
               │                       │                       │
         Fractured?              Fractured?              Box detected?
@@ -97,21 +97,21 @@ FractureMamba-ViT uses an **OR-gate ensemble** strategy to maximize recall — i
                             │                           │
                       ✅ Fractured                ❌ Not Fractured
                             │                        (stop)
-                            │
-            ┌───────────────┼───────────────┐
-            │               │               │
-            ▼               ▼               ▼
-   ┌────────┴────────┐ ┌────┴────────┐ ┌────┴────────┐
-   │   Layer 3:      │ │  Grad-CAM   │ │ Mamba State │
-   │  Fracture Type  │ │  Heatmap    │ │    Viz      │
-   │  Classification │ │             │ │             │
-   │                 │ │ Saliency    │ │   Token     │
-   │  Swin-Tiny +   │ │ overlay on  │ │ importance  │
-   │  GPT-4o-mini   │ │ X-ray image │ │  heatmap    │
-   └────────┬────────┘ └──────┬──────┘ └──────┬──────┘
-            │                 │               │
-     Fracture Type     Explainability   Explainability
-      + Confidence      (Jet cmap)      (Plasma cmap)
+                            │ 
+            ┌───────────────┼
+            │               │               
+            ▼               ▼              
+   ┌────────┴────────┐ ┌────┴────────┐ 
+   │   Layer 3:      │ │  Grad-CAM   │ 
+   │  Fracture Type  │ │  Heatmap    │
+   │  Classification │ │             │
+   │                 │ │ Saliency    │
+   │  Swin-Tiny +    │ │ overlay on  │
+   │  GPT-4o-mini    │ │ X-ray image │
+   └────────┬────────┘ └──────┬──────┘ 
+            │                 │               
+     Fracture Type     Explainability
+      + Confidence      (Jet cmap)      
 ```
 
 ### Key Components
