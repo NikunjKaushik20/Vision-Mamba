@@ -8,10 +8,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#137fec',
-        brandDark: '#0a0a0c',
-        brandSurface: '#16161a',
-        brandBorder: '#2a2a30',
+        primary: '#ec5b13',
+        brandDark: '#1a120e',
+        brandSurface: '#2d1e16',
+        brandBorder: 'rgba(236, 91, 19, 0.15)',
         "landing-primary": "#ec5b13",
         "background-light": "#f8f6f6",
         "background-dark": "#1a120e",

@@ -76,6 +76,8 @@ class GradCAM:
             print("[WARN] Grad-CAM: No gradients/activations captured. Returning zero map.")
             return np.zeros((input_tensor.shape[2], input_tensor.shape[3]))
         
+        print(f"[GradCAM] activations shape={self.activations.shape}, gradients shape={self.gradients.shape}")
+        
         # Compute weights
         weights = self.gradients.mean(dim=(0, 1) if self.gradients.dim() == 3 else (2, 3))
         
@@ -89,15 +91,24 @@ class GradCAM:
                 cam = (act * weights).sum(-1)
             
             # Reshape to spatial
-            h = w = int(np.sqrt(cam.shape[0]))
-            if h * w != cam.shape[0]:
+            seq_len = cam.shape[0]
+            if seq_len == 0:
+                print("[WARN] Grad-CAM: seq_len is 0, returning zero map.")
+                return np.zeros((input_tensor.shape[2], input_tensor.shape[3]))
+            
+            h = w = int(np.sqrt(seq_len))
+            if h == 0:
+                h = w = 1
+            if h * w != seq_len:
                 # Pad or truncate
                 total = h * w
-                if cam.shape[0] > total:
+                if seq_len > total:
                     cam = cam[:total]
                 else:
-                    cam = F.pad(cam, (0, total - cam.shape[0]))
+                    cam = F.pad(cam, (0, total - seq_len))
                 h = w = int(np.sqrt(cam.shape[0]))
+                if h == 0:
+                    h = w = 1
             
             cam = cam.reshape(h, w)
         else:
@@ -114,10 +125,15 @@ class GradCAM:
         # Resize to input size — guard against 0-size arrays
         cam = np.float32(cam)
         H, W = input_tensor.shape[2], input_tensor.shape[3]
-        if cam.size == 0 or cam.shape[0] == 0 or cam.shape[1] == 0:
+        print(f"[GradCAM] cam shape before resize: {cam.shape}, target: ({W}, {H})")
+        if cam.size == 0 or min(cam.shape) == 0:
             print("[WARN] Grad-CAM: cam is empty, returning zero map.")
             return np.zeros((H, W), dtype=np.float32)
-        cam = cv2.resize(cam, (W, H))
+        try:
+            cam = cv2.resize(cam, (W, H))
+        except Exception as e:
+            print(f"[WARN] Grad-CAM resize failed: {e}. Returning zero map.")
+            return np.zeros((H, W), dtype=np.float32)
         
         return cam
 

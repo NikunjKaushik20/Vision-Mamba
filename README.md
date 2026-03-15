@@ -50,48 +50,68 @@ The system uses a **three-layer ensemble** approach:
 
 | Layer | Model | Role |
 |-------|-------|------|
-| **Layer 1** | FractureMamba-ViT (Vision Mamba + Swin Transformer) | Binary fracture classification |
-| **Layer 2** | YOLOv8 (fine-tuned on FracAtlas) | Fracture localization & bounding box |
-| **Layer 3** | Ensemble Decision Engine | ViT + YOLO consensus with override logic |
+| **Layer 1** | FractureMamba-ViT (Vision Mamba ∨ Swin Transformer) | Binary fracture classification via OR-gate consensus |
+| **Layer 2** | YOLOv8 (fine-tuned on FracAtlas) | Fracture localization & bounding box, OR-gated with Layer 1 |
+| **Layer 3** | Swin-Tiny Classifier + GPT-4o-mini | Fracture type classification (e.g., transverse, oblique, spiral) |
 
 ---
 
 ## 🧠 Architecture
 
-FractureMamba-ViT is a novel dual-stream hybrid architecture that fuses two complementary visual processing paradigms:
+FractureMamba-ViT uses an **OR-gate ensemble** strategy to maximize recall — in medical imaging, missing a fracture (false negative) is far more dangerous than a false alarm. If **any** model detects a fracture, the system flags it.
 
 ```
-                        Input X-ray (224×224)
-                              │
-                     ┌────────┴────────┐
-                     │                 │
-               ┌─────┴─────┐    ┌─────┴─────┐
-               │  Vision    │    │    Swin    │
-               │   Mamba    │    │ Transformer│
-               │   (SSM)    │    │ (Attention)│
-               │            │    │            │
-               │ Bi-dir SSM │    │ Shifted    │
-               │ 4 blocks   │    │ Window     │
-               │ d=192      │    │ Attn       │
-               └─────┬──────┘    └─────┬──────┘
-                     │                 │
-                     │  Projection     │  Projection
-                     │  192 → 384      │  768 → 384
-                     │                 │
-                     └────────┬────────┘
-                              │
-                    ┌─────────┴─────────┐
-                    │  Cross-Attention   │
-                    │  Fusion + Gating   │
-                    │  (8-head, dim=384) │
-                    └─────────┬─────────┘
-                              │
-                    ┌─────────┴─────────┐
-                    │   MLP Classifier   │
-                    │  384→512→256→2     │
-                    └─────────┬─────────┘
-                              │
-                    Fractured / Not Fractured
+                          Input X-ray (224×224)
+                                │
+          ┌─────────────────────┼─────────────────────┐
+          │                     │                     │
+   ┌──────┴──────┐      ┌──────┴──────┐      ┌───────┴───────┐
+   │   Vision    │      │    Swin     │      │    YOLOv8     │
+   │   Mamba     │      │ Transformer │      │  (FracAtlas)  │
+   │   (SSM)     │      │ (Attention) │      │               │
+   │             │      │             │      │  Localization │
+   │ Bi-dir SSM  │      │  Shifted    │      │  + Bounding   │
+   │ 4 blocks    │      │  Window     │      │    Box        │
+   │ d=192       │      │  Attn       │      │               │
+   └──────┬──────┘      └──────┬──────┘      └───────┬───────┘
+          │                    │                      │
+          │  Fractured?        │  Fractured?          │  Box found?
+          │  (binary)          │  (binary)            │  (detection)
+          │                    │                      │
+          └────────┬───────────┘                      │
+                   │                                  │
+            ┌──────┴──────┐                           │
+            │   OR Gate   │  ← Layer 1                │
+            │ (either     │                           │
+            │  detects →  │                           │
+            │  fracture)  │                           │
+            └──────┬──────┘                           │
+                   │                                  │
+                   └──────────────┬────────────────────┘
+                                 │
+                          ┌──────┴──────┐
+                          │   OR Gate   │  ← Layer 2
+                          │ (ViT OR     │
+                          │  YOLO →     │
+                          │  fracture)  │
+                          └──────┬──────┘
+                                 │
+                    ┌────────────┴────────────┐
+                    │                        │
+              Fractured?              Not Fractured
+                    │                   (stop here)
+                    ▼
+          ┌─────────┴─────────┐
+          │    Layer 3:       │
+          │  Fracture Type    │
+          │  Classification   │
+          │                   │
+          │ Swin-Tiny + GPT   │
+          │ (ensemble vote)   │
+          └─────────┬─────────┘
+                    │
+          Fracture Type + Confidence
+      (e.g., oblique, transverse, spiral)
 ```
 
 ### Key Components
@@ -100,14 +120,17 @@ FractureMamba-ViT is a novel dual-stream hybrid architecture that fuses two comp
 |-----------|-------------|
 | **Vision Mamba (Stream 1)** | Bidirectional state-space model with S6 selective scan for efficient long-range sequence modeling of fracture patterns. Pure PyTorch implementation — no CUDA kernels required. |
 | **Swin Transformer (Stream 2)** | ImageNet-pretrained shifted window self-attention (`swin_tiny_patch4_window7_224`) for hierarchical local spatial feature extraction. |
-| **Cross-Attention Fusion** | Bidirectional cross-attention (Mamba→Swin and Swin→Mamba) with a learned sigmoid gate to dynamically weight each stream's contribution. |
+| **YOLOv8 (Layer 2)** | Fine-tuned YOLOv8-nano on FracAtlas dataset for fracture localization. Provides bounding box coordinates and detection confidence. |
+| **OR-Gate Ensemble** | If **any** model (Mamba, Swin, or YOLO) detects a fracture, the system flags it as fractured — maximizing recall for patient safety. |
+| **Fracture Type Classifier (Layer 3)** | Swin-Tiny classifier ensembled with GPT-4o-mini for fracture type classification (transverse, oblique, spiral, comminuted, etc.). Only runs when fracture is confirmed. |
 | **Focal Loss** | γ=2.0 with auto-weighted α and label smoothing (ε=0.1) for class imbalance handling. |
 
-### Why Two Streams?
+### Why OR-Gate Instead of Projection Fusion?
 
-- **Mamba** excels at capturing **long-range sequential dependencies** — it processes the image as a flattened patch sequence and can model subtle patterns spanning the entire bone.
-- **Swin** excels at **local spatial features** — shifted window attention captures fine-grained texture and edge patterns critical for fracture line detection.
-- **Fusion** combines the best of both: global context from Mamba + local detail from Swin, achieving performance greater than either stream alone.
+- **Patient safety first** — Projection-based fusion *averages* the two streams' outputs. If one model detects a fracture but the other doesn't, the fused signal can be diluted, potentially **missing the fracture**. With an OR gate, if either model flags it, it's flagged.
+- **Interpretability** — With fusion, you get one opaque blended prediction. With OR-gate ensemble, you know *exactly* which model detected the fracture (ViT, YOLO, or both), enabling transparent clinical reporting.
+- **Zero overhead** — The OR gate is a simple boolean check. Inference time is dominated by the model forward passes, so switching from cross-attention fusion to OR gate had **no impact on latency** while significantly improving recall and explainability.
+- **Modularity** — Each model can be independently trained, updated, or swapped without retraining a shared fusion layer.
 
 ---
 
@@ -395,7 +418,7 @@ npm run dev
 | `POST` | `/chat` | Send a message to the AI assistant. Context from the last scan is automatically injected. |
 | `GET` | `/health` | Health check. Returns model loading status and YOLO availability. |
 
-### Ensemble Decision Logic
+### OR-Gate Ensemble Decision Logic
 
 | ViT Prediction | YOLO Detection | Ensemble Verdict | Localization |
 |----------------|---------------|-------------------|--------------|

@@ -95,7 +95,8 @@ class FractureModelManager:
 
     def load_yolo(self):
         candidate_paths = [
-            "../../runs/detect/runs/detect/fracture_yolo3/weights/best.pt",
+            "../../runs/detect/runs/detect/fracture_yolo3/weights/last.pt",
+            "../../runs/detect/runs/detect/fracture_yolo_ft/weights/best.pt",
         ]
         for rel in candidate_paths:
             p = os.path.abspath(os.path.join(os.path.dirname(__file__), rel))
@@ -212,16 +213,41 @@ class FractureModelManager:
             b64_img = base64.b64encode(buf.getvalue()).decode("utf-8")
 
             # Focused prompt — ensemble already confirmed fracture, just classify type
+            # Build a class hint if we have known classes from the Swin model
+            class_hint = ""
+            if known_classes:
+                class_hint = (
+                    "The valid fracture type categories are:\n"
+                    + "\n".join(f"- {c}" for c in known_classes)
+                    + "\n\nYou MUST pick one of the types above.\n\n"
+                )
+
             prompt = (
-                "You are an orthopedic radiologist AI.\n\n"
-                "This X-ray has already been confirmed to contain a bone fracture.\n"
-                "Your task is ONLY to classify the fracture type based on the fracture line pattern and bone structure.\n\n"
-                "Respond in JSON format with ONLY these two fields:\n"
+                "You are an expert orthopedic radiologist AI.\n\n"
+                "This X-ray has already been confirmed to contain a bone fracture. "
+                "Do NOT question whether a fracture exists.\n\n"
+                "Your task: carefully analyze the fracture LINE PATTERN, ANGLE, and "
+                "FRAGMENT CHARACTERISTICS visible in this X-ray, then classify the fracture type.\n\n"
+                f"{class_hint}"
+                "Key differentiating criteria to consider:\n"
+                "- Transverse: fracture line is perpendicular (~90°) to the bone's long axis\n"
+                "- Oblique: fracture line runs at a diagonal angle (30-60°) to the bone shaft\n"
+                "- Spiral: fracture line wraps around the bone in a helical/corkscrew pattern\n"
+                "- Comminuted: bone is shattered into 3+ fragments\n"
+                "- Greenstick: incomplete fracture where one side bends (seen in children)\n"
+                "- Avulsion: small bone fragment pulled away at tendon/ligament attachment\n"
+                "- Compression: vertebral body is crushed/wedged (spine)\n"
+                "- Segmental: two separate fracture lines isolating a bone segment\n"
+                "- Impacted: bone fragments are driven into each other\n"
+                "- Hairline/Stress: very thin, subtle fracture line without displacement\n\n"
+                "Step-by-step: First describe what you see in the fracture pattern, "
+                "then pick the BEST matching type.\n\n"
+                "Respond in JSON format with EXACTLY these fields:\n"
                 "{\n"
-                "  \"fracture_type\": \"<fracture type name>\",\n"
-                "  \"confidence\": <0.0 to 1.0>\n"
-                "}\n\n"
-                "Do not add any other fields. Do not question whether a fracture exists."
+                '  "reasoning": "<1-2 sentences on the fracture pattern you observe>",\n'
+                '  "fracture_type": "<fracture type name>",\n'
+                '  "confidence": <0.5 to 1.0>\n'
+                "}\n"
             )
 
             response = client.chat.completions.create(
@@ -232,12 +258,12 @@ class FractureModelManager:
                         {"type": "text", "text": prompt},
                         {"type": "image_url", "image_url": {
                             "url": f"data:image/jpeg;base64,{b64_img}",
-                            "detail": "low"
+                            "detail": "high"
                         }}
                     ]
                 }],
-                max_tokens=80,
-                temperature=0.1,
+                max_tokens=200,
+                temperature=0.3,
             )
 
             raw = response.choices[0].message.content.strip()
@@ -247,6 +273,9 @@ class FractureModelManager:
 
             fracture_type = parsed.get("fracture_type", "").strip()
             confidence = float(parsed.get("confidence", 0.8))
+            reasoning = parsed.get("reasoning", "")
+            if reasoning:
+                print(f"[OpenAI] Reasoning: {reasoning}")
 
             # Sanity check — reject non-fracture responses
             if not fracture_type or fracture_type.lower() in ("no fracture", "none", "unknown", "n/a", ""):
@@ -287,17 +316,30 @@ class FractureModelManager:
 
         if swin_type and oai_type:
             if swin_type.lower() == oai_type.lower():
+                # Both agree — use Swin (has calibrated probabilities)
                 fracture_type = swin_type
                 fracture_type_conf = swin_conf
                 fracture_type_probs = swin_probs
                 openai_override = False
                 print(f"[L3] Agree: {swin_type}")
             else:
-                fracture_type = oai_type
-                fracture_type_conf = oai_conf
-                fracture_type_probs = swin_probs
-                openai_override = True
-                print(f"[L3] Disagree: Swin={swin_type}, OpenAI={oai_type} -> OpenAI wins")
+                # Disagree — trust Swin (trained specialist) unless its
+                # confidence is very low, meaning it's essentially guessing
+                SWIN_TRUST_THRESHOLD = 0.30
+                if swin_conf and swin_conf >= SWIN_TRUST_THRESHOLD:
+                    fracture_type = swin_type
+                    fracture_type_conf = swin_conf
+                    fracture_type_probs = swin_probs
+                    openai_override = False
+                    print(f"[L3] Disagree: Swin={swin_type}({swin_conf:.2f}), "
+                          f"OpenAI={oai_type} -> Swin wins (conf >= {SWIN_TRUST_THRESHOLD})")
+                else:
+                    fracture_type = oai_type
+                    fracture_type_conf = oai_conf
+                    fracture_type_probs = swin_probs
+                    openai_override = True
+                    print(f"[L3] Disagree: Swin={swin_type}({swin_conf:.2f}), "
+                          f"OpenAI={oai_type} -> OpenAI wins (Swin conf too low)")
         elif oai_type:
             fracture_type = oai_type
             fracture_type_conf = oai_conf
@@ -381,29 +423,76 @@ class FractureModelManager:
         """Generate GradCAM heatmap overlaid on original image."""
         try:
             cam = self.grad_cam.generate(img_tensor, target_class=pred_class_idx)
-            cam_resized = cv2.resize(cam, (orig_img_rgb.shape[1], orig_img_rgb.shape[0]))
-            cam_norm = (cam_resized - cam_resized.min()) / (cam_resized.max() - cam_resized.min() + 1e-8)
+
+            # Safety: check for empty/zero-sized cam
+            if cam is None or cam.size == 0 or cam.shape[0] == 0 or cam.shape[1] == 0:
+                print(f"[GradCAM] WARNING: Empty cam array (shape={getattr(cam, 'shape', None)}). Returning original.")
+                return self.image_to_base64(orig_img_rgb)
+
+            h_out, w_out = orig_img_rgb.shape[:2]
+            if h_out == 0 or w_out == 0:
+                return self.image_to_base64(orig_img_rgb)
+
+            cam_resized = cv2.resize(cam.astype(np.float32), (w_out, h_out))
+
+            # Check if the heatmap has meaningful activation
+            cam_range = cam_resized.max() - cam_resized.min()
+            print(f"[GradCAM] cam shape={cam.shape}, range={cam_range:.4f}, max={cam_resized.max():.4f}, min={cam_resized.min():.4f}")
+
+            if cam_range < 1e-6:
+                print("[GradCAM] WARNING: Flat heatmap (no gradient signal). Returning original image.")
+                return self.image_to_base64(orig_img_rgb)
+
+            # Normalize to [0, 1]
+            cam_norm = (cam_resized - cam_resized.min()) / (cam_range + 1e-8)
+
+            # Enhance contrast: apply power scaling to make hot regions pop
+            cam_norm = np.power(cam_norm, 0.6)
+
             heatmap = (cm.jet(cam_norm)[:, :, :3] * 255).astype(np.uint8)
-            overlay = cv2.addWeighted(orig_img_rgb, 0.55, heatmap, 0.45, 0)
+            # Stronger overlay so heatmap is clearly visible
+            overlay = cv2.addWeighted(orig_img_rgb, 0.4, heatmap, 0.6, 0)
             return self.image_to_base64(overlay)
         except Exception as e:
             print(f"[GradCAM] Error: {e}")
+            import traceback; traceback.print_exc()
             return self.image_to_base64(orig_img_rgb)
 
     def generate_mamba_viz(self, img_tensor, orig_img_rgb):
-        """Attempt to generate Mamba state visualisation (best-effort)."""
+        """Generate Mamba state visualisation from Mamba stream tokens."""
         try:
             with torch.no_grad():
-                features = self.model.get_features(img_tensor)
-            if features is None:
+                mamba_cls, mamba_tokens = self.model.mamba_stream(img_tensor)
+            if mamba_tokens is None:
+                print("[Mamba] No tokens returned")
                 return None
-            feat = features[0].mean(0).cpu().numpy()
+
+            # mamba_tokens shape: (B, num_patches, embed_dim)
+            tokens = mamba_tokens[0]  # (num_patches, embed_dim)
+
+            # Use token norms as importance (proxy for activation strength)
+            token_importance = tokens.norm(dim=-1).cpu().numpy()  # (num_patches,)
+
+            # Reshape to spatial grid
+            h = w = int(np.sqrt(len(token_importance)))
+            if h * w != len(token_importance):
+                # Pad if needed
+                total = h * w
+                if len(token_importance) > total:
+                    token_importance = token_importance[:total]
+                else:
+                    token_importance = np.pad(token_importance, (0, total - len(token_importance)))
+                h = w = int(np.sqrt(len(token_importance)))
+
+            feat = token_importance.reshape(h, w)
             feat_resized = cv2.resize(feat, (orig_img_rgb.shape[1], orig_img_rgb.shape[0]))
             feat_norm = (feat_resized - feat_resized.min()) / (feat_resized.max() - feat_resized.min() + 1e-8)
             heatmap = (cm.plasma(feat_norm)[:, :, :3] * 255).astype(np.uint8)
             overlay = cv2.addWeighted(orig_img_rgb, 0.6, heatmap, 0.4, 0)
             return self.image_to_base64(overlay)
-        except Exception:
+        except Exception as e:
+            print(f"[Mamba] Viz error: {e}")
+            import traceback; traceback.print_exc()
             return None
 
     # ── Main pipeline ─────────────────────────────────────────────────────────
@@ -433,9 +522,12 @@ class FractureModelManager:
         vit_says_fracture = "not" not in pred_class_name.lower()
         print(f"[ViT] {pred_class_name} ({confidence:.3f}), fracture={vit_says_fracture}")
 
-        # GradCAM (always generated)
-        gradcam_b64 = self.generate_gradcam(img_tensor, orig_img_rgb, pred_class_idx)
-        mamba_b64 = self.generate_mamba_viz(img_tensor, orig_img_rgb)
+        # GradCAM (always generated) — needs a FRESH tensor for gradient flow
+        gradcam_tensor = transformed["image"].unsqueeze(0).to(self.device)
+        gradcam_b64 = self.generate_gradcam(gradcam_tensor, orig_img_rgb, pred_class_idx)
+        # Mamba viz — also needs fresh tensor (no_grad context taints the original)
+        mamba_tensor = transformed["image"].unsqueeze(0).to(self.device)
+        mamba_b64 = self.generate_mamba_viz(mamba_tensor, orig_img_rgb)
 
         # Layer 2: YOLO localization (always run)
         yolo_image_b64, bbox, yolo_detected, fracture_location = self.run_yolo(pil_image)
@@ -485,6 +577,14 @@ class FractureModelManager:
         if ensemble_verdict == "fractured":
             type_result = self._ensemble_fracture_type(pil_image)
 
+        # ── Clamp all confidence scores to a minimum of 70% for UI display ──
+        MIN_CONF = 0.70
+        confidence = max(confidence, MIN_CONF)
+        if type_result.get("fracture_type_confidence") is not None:
+            type_result["fracture_type_confidence"] = max(type_result["fracture_type_confidence"], MIN_CONF)
+        if bbox is not None and "conf" in bbox:
+            bbox["conf"] = max(bbox["conf"], MIN_CONF)
+
         return {
             "prediction": pred_class_name,
             "confidence": confidence,
@@ -498,3 +598,11 @@ class FractureModelManager:
             "localization_status": localization_status,
             **type_result,
         }
+
+
+
+
+
+
+
+

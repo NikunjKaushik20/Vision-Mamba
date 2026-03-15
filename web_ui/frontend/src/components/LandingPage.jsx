@@ -15,12 +15,12 @@ const LandingPage = ({ theme, toggleTheme }) => {
             </div>
             <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">FractureMamba-ViT</h2>
           </div>
-          
+
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm font-medium hover:text-landing-primary transition-colors">Features</a>
             <a href="#how-it-works" className="text-sm font-medium hover:text-landing-primary transition-colors">Process</a>
             <a href="#" className="text-sm font-medium hover:text-landing-primary transition-colors">Docs</a>
-            <button 
+            <button
               onClick={toggleTheme}
               className="text-sm font-medium hover:text-landing-primary transition-colors flex items-center gap-1"
             >
@@ -29,13 +29,13 @@ const LandingPage = ({ theme, toggleTheme }) => {
           </nav>
 
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => navigate('/scan')}
               className="hidden sm:flex items-center gap-2 rounded-xl border border-landing-primary/20 bg-landing-primary/5 px-4 py-2 text-sm font-semibold text-landing-primary hover:bg-landing-primary/10 transition-all"
             >
               Sign In
             </button>
-            <button 
+            <button
               onClick={() => navigate('/scan')}
               className="flex items-center justify-center rounded-xl bg-landing-primary px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-landing-primary/20 hover:scale-105 active:scale-95 transition-all"
             >
@@ -55,28 +55,25 @@ const LandingPage = ({ theme, toggleTheme }) => {
                   <span className="material-symbols-outlined text-sm">rocket_launch</span>
                   Next-Gen Medical AI
                 </div>
-                
+
                 <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-slate-900 dark:text-white lg:text-7xl">
                   AI-Powered Fracture Detection at the <span className="text-landing-primary">Speed of Sight</span>
                 </h1>
-                
+
                 <p className="max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-400">
                   Revolutionizing diagnostics with Mamba-based architecture and a high-performance React/FastAPI stack for real-time clinical insights and unprecedented accuracy.
                 </p>
-                
+
                 <div className="flex flex-wrap gap-4">
-                  <button 
+                  <button
                     onClick={() => navigate('/scan')}
                     className="rounded-xl bg-landing-primary px-8 py-4 text-lg font-bold text-white shadow-xl shadow-landing-primary/30 hover:bg-landing-primary/90 transition-all"
                   >
                     Start Analysis Now
                   </button>
-                  <button className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 px-8 py-4 text-lg font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
-                    <span className="material-symbols-outlined">play_circle</span>
-                    Watch Demo
-                  </button>
+
                 </div>
-                
+
                 <div className="flex items-center gap-6 pt-4 text-slate-500">
                   <div className="flex flex-col">
                     <span className="text-2xl font-bold text-slate-900 dark:text-white">99.8%</span>
@@ -95,7 +92,7 @@ const LandingPage = ({ theme, toggleTheme }) => {
                 <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-landing-primary/20 to-accent-blue/20 blur-3xl"></div>
                 <div className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl">
                   <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB08HCA1btowUZG42xFyE3r_tGlvj8eifBn3OS4VQKseALSGynDhNu3dHJiZrm-iNpKaq1OLXczGhLpApAY9VDrqzbf7rlodQoJEBszhsAW4KjGoWn-0zVj7sxAlkAfqBZfSie-_xzo2Y3S2DfoyngYFsJoN67mjhswtQatFvaUE4gUWVIyllEhx6frIFaWpwZkjKKiRpgLG1sho0qnZ4Yh6eITl7qvk7ETqL1blJbwQT6JjcxAWS3lABjoesILewIOLEGrp0L2eLER" alt="High tech medical x-ray analysis on digital screen" className="h-full w-full object-cover" />
-                  
+
                   <div className="absolute bottom-4 left-4 right-4 rounded-xl glass-panel p-4 text-white">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -120,7 +117,7 @@ const LandingPage = ({ theme, toggleTheme }) => {
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white lg:text-4xl">Advanced Diagnostic Capabilities</h2>
               <p className="mt-4 text-slate-600 dark:text-slate-400">Precision engineering meets clinical expertise.</p>
             </div>
-            
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
               <div className="group flex flex-col gap-4 rounded-2xl border border-slate-200 dark:border-landing-primary/10 bg-white dark:bg-[#2d1e16] p-8 transition-all hover:-translate-y-2 hover:border-landing-primary/50">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-landing-primary/10 text-landing-primary">
@@ -164,7 +161,7 @@ const LandingPage = ({ theme, toggleTheme }) => {
               <div className="lg:w-1/2">
                 <h2 className="text-4xl font-bold dark:text-white">From Scan to Solution in Seconds</h2>
                 <p className="mt-4 text-slate-600 dark:text-slate-400">Our pipeline is optimized for clinical workflows, removing friction from emergency diagnostics.</p>
-                
+
                 <div className="mt-12 space-y-12">
                   <div className="flex gap-6">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-landing-primary text-white font-bold">1</div>
@@ -173,7 +170,7 @@ const LandingPage = ({ theme, toggleTheme }) => {
                       <p className="mt-2 text-slate-600 dark:text-slate-400">Drag and drop standard medical imaging formats (DICOM, JPEG, PNG) into our secure, encrypted gateway.</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-6">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-landing-primary text-white font-bold">2</div>
                     <div>
@@ -181,7 +178,7 @@ const LandingPage = ({ theme, toggleTheme }) => {
                       <p className="mt-2 text-slate-600 dark:text-slate-400">Our state-space model architecture analyzes spatial sequences with linear scaling efficiency.</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-6">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-landing-primary text-white font-bold">3</div>
                     <div>
@@ -196,7 +193,7 @@ const LandingPage = ({ theme, toggleTheme }) => {
                 <div className="relative overflow-hidden rounded-3xl bg-slate-200 dark:bg-slate-800 p-2">
                   <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJHMn6bA8pWbUjBCqKYbrpwGnmw7E4o4X-NNaIawjw5KfCfbZG_-k7ifcJLKdaXpERNr7pOHoMzAolXYy1OcHLG6bqIxbgVOR_0SewqzxtbbfthcInvAlbzv1MP6uXi58AOGhoQ6wTKu8-rFJ23NnbXX1H8OFP_iutgcP8pMaClgMjUC08yw8FA9-5cyJA45lWRQs3mJGn-OGWYW2akfmPGvyiD8N9B5iYcMXd7fJzAyhHpK0i0WhKvqZYgfiicwsujRx2WmeS3lHT" alt="Laboratory scientist" className="rounded-2xl object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
-                  
+
                   <div className="absolute bottom-8 left-8">
                     <div className="flex items-center gap-2 text-white">
                       <span className="h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
@@ -220,7 +217,7 @@ const LandingPage = ({ theme, toggleTheme }) => {
                   <p className="text-sm text-slate-600 dark:text-slate-400">System architecture health and model performance tracking.</p>
                 </div>
               </div>
-              
+
               <div className="flex gap-8">
                 <div className="text-center">
                   <div className="text-xl font-bold text-green-500">Operational</div>
@@ -263,7 +260,7 @@ const LandingPage = ({ theme, toggleTheme }) => {
                 </a>
               </div>
             </div>
-            
+
             <div>
               <h4 className="font-bold mb-6 dark:text-white">Documentation</h4>
               <ul className="space-y-4 text-sm text-slate-500">
@@ -273,7 +270,7 @@ const LandingPage = ({ theme, toggleTheme }) => {
                 <li><a href="#" className="hover:text-landing-primary">Model Training</a></li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-bold mb-6 dark:text-white">Resources</h4>
               <ul className="space-y-4 text-sm text-slate-500">
@@ -283,20 +280,10 @@ const LandingPage = ({ theme, toggleTheme }) => {
                 <li><a href="#" className="hover:text-landing-primary">Data Ethics</a></li>
               </ul>
             </div>
-            
-            <div>
-              <h4 className="font-bold mb-6 dark:text-white">Contact</h4>
-              <ul className="space-y-4 text-sm text-slate-500">
-                <li className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">mail</span> support@mambavit.ai
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">location_on</span> San Francisco, CA
-                </li>
-              </ul>
-            </div>
+
+
           </div>
-          
+
           <div className="pt-8 border-t border-slate-200 dark:border-landing-primary/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
             <p>© 2026 FractureMamba-ViT. All rights reserved.</p>
             <div className="flex gap-6">

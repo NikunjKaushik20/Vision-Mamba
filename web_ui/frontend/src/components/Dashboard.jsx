@@ -119,7 +119,7 @@ const Dashboard = ({ theme, toggleTheme }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
               </svg>
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-white hidden sm:block">FractureMamba-ViT</h1>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white hidden sm:block">FractureMamba-ViT</h1>
           </div>
           {/* Backend Health Status */}
           <div className={`ml-2 sm:ml-6 flex items-center gap-2 px-3 py-1 border rounded-full ${
@@ -139,11 +139,21 @@ const Dashboard = ({ theme, toggleTheme }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
+          {/* User Profile */}
+          <div className="flex items-center gap-3 pl-6 border-l border-slate-200 dark:border-brandBorder">
+            <div className="text-right hidden sm:block">
+              <p className="text-sm font-medium text-slate-900 dark:text-white">Guest User</p>
+              <p className="text-[10px] text-slate-500 uppercase">Viewer</p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 dark:from-primary dark:to-orange-600 border border-white/20 flex items-center justify-center overflow-hidden">
+              <div className="text-white text-md font-bold">GU</div>
+            </div>
+          </div>
           {/* Theme Toggle */}
           <button 
             onClick={toggleTheme}
-            className="p-2 text-slate-400 hover:text-white transition-colors" 
+            className="p-2 text-slate-400 hover:text-primary transition-colors" 
             title="Toggle Theme"
           >
             {theme === 'dark' ? (
@@ -156,17 +166,6 @@ const Dashboard = ({ theme, toggleTheme }) => {
               </svg>
             )}
           </button>
-          
-          {/* User Profile */}
-          <div className="flex items-center gap-3 pl-6 border-l border-slate-200 dark:border-brandBorder">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-slate-900 dark:text-white">Guest User</p>
-              <p className="text-[10px] text-slate-500 uppercase">Viewer</p>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 dark:from-primary dark:to-blue-600 border border-white/20 flex items-center justify-center overflow-hidden">
-              <div className="text-white text-md font-bold">GU</div>
-            </div>
-          </div>
         </div>
       </header>
 

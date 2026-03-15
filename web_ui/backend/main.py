@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
+import asyncio
 import io
 import base64
 from PIL import Image
@@ -50,8 +51,9 @@ async def predict(file: UploadFile = File(...)):
         contents = await file.read()
         image = Image.open(io.BytesIO(contents)).convert("RGB")
         
-        # Run inference wrapper
-        result = model_manager.predict_and_explain(image)
+        # Run inference in a thread so the event loop stays responsive
+        # (prevents /health from timing out during long predictions)
+        result = await asyncio.to_thread(model_manager.predict_and_explain, image)
         
         return JSONResponse(content=result)
         

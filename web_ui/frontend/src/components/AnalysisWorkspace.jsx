@@ -134,7 +134,7 @@ const AnalysisWorkspace = ({ analysisState, currentImage, result, error }) => {
   return (
     <section className="col-span-12 lg:col-span-6 bg-white dark:bg-brandDark/50 p-6 overflow-y-auto transition-colors">
       {/* Verdict Banner */}
-      <div className={`border rounded-custom p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+      <div className={`border rounded-custom p-4 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
         isFracture 
           ? 'bg-red-500/10 border-red-500/50 glow-danger' 
           : 'bg-green-500/10 border-green-500/50'
@@ -161,30 +161,9 @@ const AnalysisWorkspace = ({ analysisState, currentImage, result, error }) => {
               Classification: {result.prediction}
               {wasOverridden && ' (YOLO override)'}
             </p>
-            {/* Layer 3: Fracture Type */}
-            {isFracture && result.fracture_type && (
-              <p className="text-xs text-amber-400 mt-0.5 font-medium">
-                Type: {result.fracture_type}
-                {result.fracture_type_confidence && (
-                  <span className="ml-1 text-slate-400 font-normal">
-                    ({(result.fracture_type_confidence * 100).toFixed(1)}% conf)
-                  </span>
-                )}
-              </p>
-            )}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {isFracture && result.fracture_type && (
-            <span className="text-[9px] bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded border border-orange-500/30 uppercase font-bold whitespace-nowrap">
-              {result.fracture_type}
-            </span>
-          )}
-          {result.openai_override && (
-            <span className="text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded border border-purple-500/30 uppercase font-bold whitespace-nowrap" title="Fracture type determined by OpenAI gpt-4o-mini vision model">
-              OpenAI Assist
-            </span>
-          )}
           {wasOverridden && (
             <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30 uppercase font-bold whitespace-nowrap">
               YOLO Override
@@ -200,6 +179,21 @@ const AnalysisWorkspace = ({ analysisState, currentImage, result, error }) => {
           </button>
         </div>
       </div>
+
+      {/* Fracture Type — Highlighted outside verdict box */}
+      {isFracture && result.fracture_type && (
+        <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-custom bg-orange-500/10 border border-orange-500/30" style={{ boxShadow: '0 0 12px rgba(249, 115, 22, 0.15)' }}>
+          <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold shrink-0">Fracture Type</span>
+          <span className="text-base font-black text-orange-400 uppercase tracking-wide">
+            {result.fracture_type}
+          </span>
+          {result.fracture_type_confidence && (
+            <span className="text-xs text-orange-400/60 font-medium ml-auto shrink-0">
+              {(result.fracture_type_confidence * 100).toFixed(1)}% conf
+            </span>
+          )}
+        </div>
+      )}
       
       {showFullReport && (
         <div className="mb-6 p-4 rounded-custom bg-brandSurface border border-brandBorder text-sm text-slate-300">
