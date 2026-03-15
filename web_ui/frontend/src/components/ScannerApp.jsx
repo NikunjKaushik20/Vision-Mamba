@@ -372,7 +372,13 @@ export default function ScannerApp({ theme, toggleTheme }) {
         try {
             const res = await fetch('http://localhost:8000/predict', { method: 'POST', body: fd });
             if (!res.ok) throw new Error('Backend error — ensure FastAPI is running on port 8000.');
-            setResult(await res.json());
+            const data = await res.json();
+            if (data.rejected) {
+                setError(data.reject_reason || 'The uploaded image does not appear to be a medical X-ray.');
+                setFile(null);
+            } else {
+                setResult(data);
+            }
         } catch (e) {
             setError(e.message);
             setFile(null);

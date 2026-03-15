@@ -359,6 +359,65 @@ class FractureModelManager:
             "openai_reasoning": openai_reasoning,
         }
 
+    # ── X-ray validation ──────────────────────────────────────────────────────
+
+    def _is_xray_image(self, pil_image):
+        """
+        Heuristic check: is this image likely a medical X-ray?
+        Uses three independent tests — passes if at least 2 of 3 agree.
+        Returns (is_xray: bool, reason: str).
+        """
+        img_rgb = np.array(pil_image)
+        if img_rgb.ndim != 3 or img_rgb.shape[2] != 3:
+            return False, "Image does not have 3 colour channels."
+
+        h, w = img_rgb.shape[:2]
+        if h < 50 or w < 50:
+            return False, "Image is too small to be a medical scan."
+
+        votes = 0
+        reasons = []
+
+        # ── Check 1: Low colour saturation (X-rays are near-grayscale) ────────
+        hsv = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2HSV)
+        mean_saturation = float(hsv[:, :, 1].mean())
+        SAT_THRESHOLD = 35  # out of 255; typical X-rays have <20
+        if mean_saturation < SAT_THRESHOLD:
+            votes += 1
+        else:
+            reasons.append(f"high colour saturation ({mean_saturation:.0f}/255)")
+
+        # ── Check 2: Wide intensity range (X-rays span most of [0, 255]) ─────
+        gray = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
+        p5, p95 = np.percentile(gray, [5, 95])
+        intensity_range = p95 - p5
+        RANGE_THRESHOLD = 80
+        if intensity_range >= RANGE_THRESHOLD:
+            votes += 1
+        else:
+            reasons.append(f"narrow intensity range ({intensity_range:.0f})")
+
+        # ── Check 3: Significant dark background (typical of X-rays) ─────────
+        dark_ratio = float((gray < 40).sum()) / (h * w)
+        DARK_THRESHOLD = 0.08  # at least 8 % of pixels are very dark
+        if dark_ratio >= DARK_THRESHOLD:
+            votes += 1
+        else:
+            reasons.append(f"low dark-background ratio ({dark_ratio:.1%})")
+
+        is_xray = votes >= 2
+        if is_xray:
+            print(f"[XrayGuard] PASS  (votes={votes}/3, sat={mean_saturation:.0f}, "
+                  f"range={intensity_range:.0f}, dark={dark_ratio:.1%})")
+            return True, ""
+        else:
+            detail = "; ".join(reasons)
+            print(f"[XrayGuard] FAIL  (votes={votes}/3: {detail})")
+            return False, (
+                "The uploaded image does not appear to be a medical X-ray. "
+                "Please upload a valid bone X-ray image for fracture analysis."
+            )
+
     # ── Utility ───────────────────────────────────────────────────────────────
 
     def image_to_base64(self, img_array):
@@ -502,6 +561,16 @@ class FractureModelManager:
             self.load_model()
         if self.model is None:
             raise RuntimeError(self.load_error or "Classifier model is not loaded")
+
+        # ── Guard: reject non-X-ray images ────────────────────────────────
+        is_xray, reject_reason = self._is_xray_image(pil_image)
+        if not is_xray:
+            return {
+                "rejected": True,
+                "reject_reason": reject_reason,
+                "prediction": None,
+                "confidence": None,
+            }
 
         orig_img_rgb = np.array(pil_image)
 

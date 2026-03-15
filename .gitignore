@@ -1,6 +1,13 @@
 # Dataset (too large for GitHub)
 Bone_Fracture_Binary_Classification/
 data/
+*.zip
+
+# Base YOLO model (download separately)
+yolov8l.pt
+
+# Node modules
+node_modules/
 
 # Checkpoints tracked via Git LFS (see .gitattributes)
 

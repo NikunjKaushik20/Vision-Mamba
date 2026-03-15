@@ -80,6 +80,12 @@ const Dashboard = ({ theme, toggleTheme }) => {
         if (!res.ok) throw new Error('Backend error — prediction failed.');
         const data = await res.json();
         
+        if (data.rejected) {
+            setError(data.reject_reason || 'The uploaded image does not appear to be a medical X-ray.');
+            setAnalysisState('error');
+            return;
+        }
+
         setPredictionResult(data);
         setAnalysisState('complete');
         

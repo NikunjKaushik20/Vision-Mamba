@@ -89,7 +89,7 @@ FractureMamba-ViT uses an **OR-gate ensemble** strategy to maximize recall — i
                                           │
                                   ┌───────┴───────┐
                                   │   OR Gate     │  ← Layer 2
-                                  │ (ViT ∨ YOLO  │
+                                  │ (ViT ∨ YOLO   │
                                   │  = fracture)  │
                                   └───────┬───────┘
                                           │
